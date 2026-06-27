@@ -5,6 +5,8 @@ import com.interviewplatform.backend.candidate.service.CandidateDashboardService
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.interviewplatform.backend.candidate.dto.dashboard.ReadinessPoint;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/candidate/dashboard")
@@ -26,5 +28,12 @@ public class CandidateDashboardController {
 
         // Return Dashboard
         return dashboardService.getDashboard();
+    }
+
+    // Readiness Chart API
+    @GetMapping("/readiness")
+    public List<ReadinessPoint> getReadinessChart() {
+
+        return dashboardService.getReadinessChart();
     }
 }
