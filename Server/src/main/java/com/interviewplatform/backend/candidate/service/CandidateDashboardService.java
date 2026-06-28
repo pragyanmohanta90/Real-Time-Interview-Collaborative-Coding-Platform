@@ -1,12 +1,14 @@
 package com.interviewplatform.backend.candidate.service;
 
 import com.interviewplatform.backend.candidate.dto.dashboard.DashboardResponse;
+import com.interviewplatform.backend.candidate.dto.dashboard.ReadinessPoint;
+import com.interviewplatform.backend.candidate.dto.dashboard.SkillBreakdownResponse;
 import com.interviewplatform.backend.model.User;
 import com.interviewplatform.backend.service.UserService;
 import org.springframework.stereotype.Service;
-import com.interviewplatform.backend.candidate.dto.dashboard.ReadinessPoint;
 import java.util.ArrayList;
 import java.util.List;
+import com.interviewplatform.backend.candidate.dto.dashboard.SessionResponse;
 
 @Service
 public class CandidateDashboardService {
@@ -52,6 +54,56 @@ public class CandidateDashboardService {
         readiness.add(new ReadinessPoint("Mock 7", 79));
         readiness.add(new ReadinessPoint("Mock 8", 88));
 
+        // Return Response
         return readiness;
+    }
+
+    // Skill Breakdown
+    public SkillBreakdownResponse getSkillBreakdown() {
+
+        // Skill Breakdown Response
+        SkillBreakdownResponse response = new SkillBreakdownResponse();
+
+        response.setConfidence(82);
+        response.setTechnical(88);
+        response.setReadiness(85);
+        response.setProblemSolving(90);
+        response.setCommunication(76);
+
+        // Return Response
+        return response;
+    }
+
+    // Recent & Upcoming Sessions
+    public List<SessionResponse> getSessions() {
+
+        List<SessionResponse> sessions = new ArrayList<>();
+
+        sessions.add(new SessionResponse(
+                "Technical Round",
+                "Jun 12, 2026",
+                "45 min",
+                82,
+                "COMPLETED"
+        ));
+
+        sessions.add(new SessionResponse(
+                "Behavioral Round",
+                "Jun 10, 2026",
+                "30 min",
+                76,
+                "COMPLETED"
+        ));
+
+        sessions.add(new SessionResponse(
+                "System Design",
+                "Jun 18, 2026",
+                "60 min",
+                null,
+                "SCHEDULED"
+        ));
+
+        // Return Response
+        return sessions;
     }
 }
