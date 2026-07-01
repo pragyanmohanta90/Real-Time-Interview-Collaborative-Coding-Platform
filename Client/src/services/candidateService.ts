@@ -1,65 +1,41 @@
+import API from "./api";
 import type {
   DashboardResponse,
   UserProfile,
 } from "../app/pages/CandidateDashboard";
 
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
+export const fetchDashboard = async (): Promise<DashboardResponse> => {
+  const { data } = await API.get("/candidate/dashboard");
+  return data;
+};
 
-const BASE_URL = `${API_URL}/api/candidate`;
+export const updateProfile = async (
+  payload: Partial<UserProfile>
+): Promise<UserProfile> => {
+  const { data } = await API.put("/candidate/profile", payload);
+  return data;
+};
 
-export async function fetchDashboard(): Promise<DashboardResponse> {
-  const res = await fetch(`${BASE_URL}/dashboard`);
-  if (!res.ok) throw new Error(`Failed to load dashboard (${res.status})`);
-  return res.json();
-}
-
-export async function updateProfile(
-  payload: Partial<UserProfile>,
-): Promise<UserProfile> {
-  const res = await fetch(`${BASE_URL}/profile`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+export const addSkillApi = async (skill: string) => {
+  const { data } = await API.post("/candidate/skills", {
+    skill,
   });
 
-  if (!res.ok) throw new Error(`Failed to save profile (${res.status})`);
-  return res.json();
-}
+  return data;
+};
 
-export async function addSkillApi(skill: string) {
-  const res = await fetch(`${BASE_URL}/skills`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ skill }),
+export const deleteSkillApi = async (id: string) => {
+  await API.delete(`/candidate/skills/${id}`);
+};
+
+export const addTargetApi = async (target: string) => {
+  const { data } = await API.post("/candidate/targets", {
+    target,
   });
 
-  if (!res.ok) throw new Error(`Failed to add skill (${res.status})`);
-  return res.json();
-}
+  return data;
+};
 
-export async function deleteSkillApi(id: string) {
-  const res = await fetch(`${BASE_URL}/skills/${id}`, {
-    method: "DELETE",
-  });
-
-  if (!res.ok) throw new Error(`Failed to delete skill (${res.status})`);
-}
-
-export async function addTargetApi(target: string) {
-  const res = await fetch(`${BASE_URL}/targets`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ target }),
-  });
-
-  if (!res.ok) throw new Error(`Failed to add target (${res.status})`);
-  return res.json();
-}
-
-export async function deleteTargetApi(id: string) {
-  const res = await fetch(`${BASE_URL}/targets/${id}`, {
-    method: "DELETE",
-  });
-
-  if (!res.ok) throw new Error(`Failed to remove target (${res.status})`);
-}
+export const deleteTargetApi = async (id: string) => {
+  await API.delete(`/candidate/targets/${id}`);
+};
