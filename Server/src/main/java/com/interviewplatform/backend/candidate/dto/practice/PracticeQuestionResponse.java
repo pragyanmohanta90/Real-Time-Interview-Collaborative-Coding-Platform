@@ -1,77 +1,86 @@
 package com.interviewplatform.backend.candidate.dto.practice;
 
-// Class
 public class PracticeQuestionResponse {
 
-    // Fields
     private String id;
-    private String title;
-    private String category;
-    private String difficulty;
-    private boolean completed;
 
-    // Default Constructor
+    private String title;
+
+    // Frontend expects "topic"
+    private String topic;
+
+    private String difficulty;
+
+    // Frontend expects "done"
+    private boolean done;
+
+    // Frontend expects "time"
+    private String time;
+
     public PracticeQuestionResponse() {
     }
 
-    // Parameterized Constructor
-    public PracticeQuestionResponse(String id, String title,
-                                    String category, String difficulty,
-                                    boolean completed) {
+    public PracticeQuestionResponse(
+            String id,
+            String title,
+            String topic,
+            String difficulty,
+            boolean done,
+            String time
+    ) {
         this.id = id;
         this.title = title;
-        this.category = category;
+        this.topic = topic;
         this.difficulty = difficulty;
-        this.completed = completed;
+        this.done = done;
+        this.time = time;
     }
 
-    // Getter
     public String getId() {
         return id;
     }
 
-    // Setter
     public void setId(String id) {
         this.id = id;
     }
 
-    // Getter
     public String getTitle() {
         return title;
     }
 
-    // Setter
     public void setTitle(String title) {
         this.title = title;
     }
 
-    // Getter
-    public String getCategory() {
-        return category;
+    public String getTopic() {
+        return topic;
     }
 
-    // Setter
-    public void setCategory(String category) {
-        this.category = category;
+    public void setTopic(String topic) {
+        this.topic = topic;
     }
 
-    // Getter
     public String getDifficulty() {
         return difficulty;
     }
 
-    // Setter
     public void setDifficulty(String difficulty) {
         this.difficulty = difficulty;
     }
 
-    // Getter
-    public boolean isCompleted() {
-        return completed;
+    public boolean isDone() {
+        return done;
     }
 
-    // Setter
-    public void setCompleted(boolean completed) {
-        this.completed = completed;
+    public void setDone(boolean done) {
+        this.done = done;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
     }
 }

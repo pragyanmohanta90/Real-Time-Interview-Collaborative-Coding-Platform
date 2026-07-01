@@ -1,155 +1,142 @@
 package com.interviewplatform.backend.candidate.service;
 
+import com.interviewplatform.backend.candidate.dto.practice.PracticeQuestionDetailResponse;
 import com.interviewplatform.backend.candidate.dto.practice.PracticeQuestionResponse;
-import org.springframework.stereotype.Service;
 import com.interviewplatform.backend.candidate.dto.practice.SubmissionResponse;
+import com.interviewplatform.backend.model.Difficulty;
+import com.interviewplatform.backend.model.Example;
+import com.interviewplatform.backend.model.Question;
+import com.interviewplatform.backend.model.User;
+import com.interviewplatform.backend.repository.QuestionRepository;
+import com.interviewplatform.backend.service.UserService;
+import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.List;
-import com.interviewplatform.backend.candidate.dto.practice.PracticeQuestionDetailResponse;
 
 @Service
 public class PracticeQuestionService {
 
+    private final QuestionRepository questionRepository;
+    private final UserService userService;
+    private final QuestionSubmissionService questionSubmissionService;
+
+    public PracticeQuestionService(
+            QuestionRepository questionRepository,
+            UserService userService,
+            QuestionSubmissionService questionSubmissionService
+    ) {
+        this.questionRepository = questionRepository;
+        this.userService = userService;
+        this.questionSubmissionService = questionSubmissionService;
+    }
+
     // Get Practice Questions
     public List<PracticeQuestionResponse> getPracticeQuestions(String difficulty) {
 
-        List<PracticeQuestionResponse> questions = new ArrayList<>();
+        User user = userService.getLoggedInUser();
 
-        questions.add(new PracticeQuestionResponse(
-                "1",
-                "Merge K Sorted Lists",
-                "Linked Lists",
-                "Hard",
-                false
-        ));
+        List<Question> questions;
 
-        questions.add(new PracticeQuestionResponse(
-                "2",
-                "Design Twitter",
-                "System Design",
-                "Hard",
-                false
-        ));
-
-        questions.add(new PracticeQuestionResponse(
-                "3",
-                "Word Search II",
-                "Backtracking",
-                "Hard",
-                false
-        ));
-
-        questions.add(new PracticeQuestionResponse(
-                "4",
-                "Two Sum",
-                "Arrays",
-                "Easy",
-                true
-        ));
-
-        questions.add(new PracticeQuestionResponse(
-                "5",
-                "Valid Parentheses",
-                "Stacks",
-                "Easy",
-                true
-        ));
-
-        questions.add(new PracticeQuestionResponse(
-                "6",
-                "Binary Search",
-                "Searching",
-                "Easy",
-                true
-        ));
-
-        questions.add(new PracticeQuestionResponse(
-                "7",
-                "Longest Substring Without Repeating Characters",
-                "Strings",
-                "Medium",
-                true
-        ));
-
-        questions.add(new PracticeQuestionResponse(
-                "8",
-                "LRU Cache",
-                "Design",
-                "Medium",
-                false
-        ));
-
-        // Return All Questions
         if (difficulty == null || difficulty.isBlank()) {
-            return questions;
+            questions = questionRepository.findAll();
+        } else {
+            questions = questionRepository.findByDifficulty(
+                    Difficulty.valueOf(difficulty.toUpperCase())
+            );
         }
 
-        // Filter Questions
-        List<PracticeQuestionResponse> filteredQuestions = new ArrayList<>();
+        List<PracticeQuestionResponse> response = new ArrayList<>();
 
-        for (PracticeQuestionResponse question : questions) {
+        for (Question question : questions) {
 
-            if (question.getDifficulty().equalsIgnoreCase(difficulty)) {
-                filteredQuestions.add(question);
-            }
+            boolean solved = questionSubmissionService.isSolved(
+                    user.getId(),
+                    question.getId()
+            );
+
+            response.add(
+                    new PracticeQuestionResponse(
+                            question.getId(),
+                            question.getTitle(),
+                            question.getCategory(),
+                            question.getDifficulty().name(),
+                            solved,
+                            question.getEstimatedTime() == null
+                                    ? null
+                                    : question.getEstimatedTime() + " min"
+                    )
+            );
         }
 
-        // Return Filtered Questions
-        return filteredQuestions;
+        return response;
     }
 
     // Get Practice Progress
     public SubmissionResponse getPracticeProgress() {
 
+        User user = userService.getLoggedInUser();
+
         SubmissionResponse response = new SubmissionResponse();
 
-        response.setCompleted(4);
-        response.setTotal(8);
+        response.setCompleted(
+                (int) questionSubmissionService.getSolvedCount(user.getId())
+        );
 
-        // Return Response
+        response.setTotal(
+                (int) questionRepository.count()
+        );
+
         return response;
     }
 
-    // Get Question By ID
+    // Get Question Details
     public PracticeQuestionDetailResponse getQuestionById(String id) {
 
-        PracticeQuestionDetailResponse response = new PracticeQuestionDetailResponse();
+        Question question = questionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Question not found"));
 
-        response.setId(id);
-        response.setTitle("Two Sum");
-        response.setCategory("Arrays");
-        response.setDifficulty("Easy");
+        PracticeQuestionDetailResponse response =
+                new PracticeQuestionDetailResponse();
 
-        response.setDescription(
-                "Given an array of integers nums and an integer target, " +
-                        "return indices of the two numbers such that they add up to the target."
-        );
+        response.setId(question.getId());
+        response.setTitle(question.getTitle());
+        response.setCategory(question.getCategory());
+        response.setDifficulty(question.getDifficulty().name());
+        response.setDescription(question.getDescription());
 
-        response.setExamples(List.of(
-                "Input: nums = [2,7,11,15], target = 9\nOutput: [0,1]",
-                "Input: nums = [3,2,4], target = 6\nOutput: [1,2]"
-        ));
+        List<String> exampleList = new ArrayList<>();
 
-        response.setConstraints(List.of(
-                "2 <= nums.length <= 10^4",
-                "-10^9 <= nums[i] <= 10^9",
-                "Only one valid answer exists."
-        ));
+        if (question.getExamples() != null) {
 
-        response.setTags(List.of(
-                "Array",
-                "Hash Table"
-        ));
+            for (Example example : question.getExamples()) {
 
-        response.setStarterCode(
-                "public class Solution {\n" +
-                        "    public int[] twoSum(int[] nums, int target) {\n" +
-                        "\n" +
-                        "    }\n" +
-                        "}"
-        );
+                StringBuilder builder = new StringBuilder();
 
-        // Return Response
+                if (example.getInput() != null && !example.getInput().isBlank()) {
+                    builder.append("Input: ").append(example.getInput());
+                }
+
+                if (example.getOutput() != null && !example.getOutput().isBlank()) {
+                    builder.append("\nOutput: ").append(example.getOutput());
+                }
+
+                if (example.getExplanation() != null && !example.getExplanation().isBlank()) {
+                    builder.append("\nExplanation: ").append(example.getExplanation());
+                }
+
+                exampleList.add(builder.toString());
+            }
+        }
+
+        response.setExamples(exampleList);
+        response.setConstraints(question.getConstraints());
+        response.setTags(question.getTags());
+
+        if (question.getStarterCode() != null) {
+            response.setStarterCode(question.getStarterCode().getJava());
+        }
+
         return response;
     }
 }

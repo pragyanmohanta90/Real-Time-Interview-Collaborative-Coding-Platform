@@ -11,6 +11,10 @@ public class Question {
     @Id
     private String id;
 
+    private String externalProblemId;
+
+    private String slug;
+
     private String title;
 
     private String description;
@@ -40,6 +44,22 @@ public class Question {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getExternalProblemId() {
+        return externalProblemId;
+    }
+
+    public void setExternalProblemId(String externalProblemId) {
+        this.externalProblemId = externalProblemId;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
     }
 
     public String getTitle() {

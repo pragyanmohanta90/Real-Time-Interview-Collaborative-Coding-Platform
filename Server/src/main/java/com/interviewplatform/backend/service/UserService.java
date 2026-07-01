@@ -2,15 +2,15 @@ package com.interviewplatform.backend.service;
 
 import com.interviewplatform.backend.dto.AuthResponse;
 import com.interviewplatform.backend.dto.LoginRequest;
+import com.interviewplatform.backend.dto.UpdateUserRequest;
+import com.interviewplatform.backend.dto.UserResponse;
+import com.interviewplatform.backend.jwt.JwtUtil;
 import com.interviewplatform.backend.model.User;
 import com.interviewplatform.backend.repository.UserRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
-import com.interviewplatform.backend.jwt.JwtUtil;
-import com.interviewplatform.backend.dto.UserResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import com.interviewplatform.backend.dto.UpdateUserRequest;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
@@ -19,46 +19,59 @@ public class UserService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-    public UserService(UserRepository userRepository,
-                       BCryptPasswordEncoder passwordEncoder,
-                       JwtUtil jwtUtil) {
-
+    public UserService(
+            UserRepository userRepository,
+            BCryptPasswordEncoder passwordEncoder,
+            JwtUtil jwtUtil
+    ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
     }
 
-    // REGISTER
+    // Register User
     public User registerUser(User user) {
 
-        // Check if email already exists
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new RuntimeException("Email already exists");
         }
 
-        // Password validation
         if (user.getPassword().length() < 8) {
             throw new RuntimeException(
                     "Password must be at least 8 characters long"
             );
         }
 
-        // Encrypt password
         user.setPassword(
                 passwordEncoder.encode(user.getPassword())
         );
 
+        if (user.getTitle() == null) {
+            user.setTitle("");
+        }
+
+        if (user.getLocation() == null) {
+            user.setLocation("");
+        }
+
+        if (user.getAvatar() == null) {
+            user.setAvatar("");
+        }
+
+        if (user.getAbout() == null) {
+            user.setAbout("");
+        }
+
         return userRepository.save(user);
     }
 
-    // LOGIN
+    // Login User
     public AuthResponse loginUser(LoginRequest request) {
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() ->
                         new RuntimeException("User not found"));
 
-        // Role validation
         if (!user.getRole().equalsIgnoreCase(request.getRole())) {
             throw new RuntimeException("Invalid role selected");
         }
@@ -86,22 +99,20 @@ public class UserService {
         );
     }
 
+    // Current User Response
     public UserResponse getCurrentUser() {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+        User user = getLoggedInUser();
 
         return new UserResponse(
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
-                user.getRole()
+                user.getRole(),
+                user.getTitle(),
+                user.getLocation(),
+                user.getAvatar(),
+                user.getAbout()
         );
     }
 
@@ -123,27 +134,48 @@ public class UserService {
             UpdateUserRequest request
     ) {
 
-        // User Details
         User user = getLoggedInUser();
 
-        // Update Fields
-        user.setName(
-                request.getName()
-        );
+        if (request.getName() != null) {
+            user.setName(request.getName());
+        }
 
-        user.setEmail(
-                request.getEmail()
-        );
+        if (request.getEmail() != null) {
+            user.setEmail(request.getEmail());
+        }
 
-        // Save User
+        if (request.getTitle() != null) {
+            user.setTitle(request.getTitle());
+        }
+
+        if (request.getLocation() != null) {
+            user.setLocation(request.getLocation());
+        }
+
+        if (request.getAvatar() != null) {
+            user.setAvatar(request.getAvatar());
+        }
+
+        if (request.getAbout() != null) {
+            user.setAbout(request.getAbout());
+        }
+
         User updatedUser = userRepository.save(user);
 
-        // Response
         return new UserResponse(
                 updatedUser.getId(),
                 updatedUser.getName(),
                 updatedUser.getEmail(),
-                updatedUser.getRole()
+                updatedUser.getRole(),
+                updatedUser.getTitle(),
+                updatedUser.getLocation(),
+                updatedUser.getAvatar(),
+                updatedUser.getAbout()
         );
+    }
+
+    // Save User
+    public User saveUser(User user) {
+        return userRepository.save(user);
     }
 }
