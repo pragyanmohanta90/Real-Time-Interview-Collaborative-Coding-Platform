@@ -348,7 +348,26 @@ function DashboardSkeleton() {
 }
 
 function DashboardSection({ data }: { data: DashboardResponse }) {
-  const { stats, progressHistory, skillBreakdown, mockSessions } = data;
+  const {
+    stats = {
+      questionsSolved: 0,
+      practiceHours: 0,
+      mockSessions: 0,
+      weeklyImprovement: 0,
+    },
+    progressHistory = [],
+    skillBreakdown = [],
+    mockSessions = [],
+    user = {
+      id: "",
+      name: "Candidate",
+      email: "",
+      title: "",
+      location: "",
+      about: "",
+      readinessScore: 0,
+    },
+  } = data;
 
   return (
     <div>
@@ -366,7 +385,7 @@ function DashboardSection({ data }: { data: DashboardResponse }) {
         <StatCard
           icon={<BarChart2 className="w-4.5 h-4.5" />}
           label="Readiness Score"
-          value={String(data.user.readinessScore)}
+          value={String(user.readinessScore)}
           sub="↑ this month"
           accent
         />
@@ -539,7 +558,11 @@ function DashboardSection({ data }: { data: DashboardResponse }) {
   );
 }
 
-function PracticeSection({ questions }: { questions: PracticeQuestion[] }) {
+function PracticeSection({
+                           questions = [],
+                         }: {
+  questions?: PracticeQuestion[];
+}) {
   const [filter, setFilter] = useState<"All" | "Easy" | "Medium" | "Hard">(
     "All",
   );
@@ -641,11 +664,11 @@ function PracticeSection({ questions }: { questions: PracticeQuestion[] }) {
 }
 
 function MockSection({
-  result,
-  sessions,
-}: {
+                       result,
+                       sessions = [],
+                     }: {
   result: MockResult | null;
-  sessions: MockSession[];
+  sessions?: MockSession[];
 }) {
   const completedSessions = sessions.filter((s) => s.status === "completed");
 
@@ -941,7 +964,11 @@ function MockSection({
   );
 }
 
-function RoomsSection({ rooms }: { rooms: Room[] }) {
+function RoomsSection({
+                        rooms = [],
+                      }: {
+  rooms?: Room[];
+}) {
   return (
     <div>
       <SectionHeader
@@ -1025,7 +1052,26 @@ function ProfileSection({
   data: DashboardResponse;
   onEdit: () => void;
 }) {
-  const { user, skills, targets, experience, stats } = data;
+  const {
+    user = {
+      id: "",
+      name: "Candidate",
+      email: "",
+      title: "",
+      location: "",
+      about: "",
+      readinessScore: 0,
+    },
+    skills = [],
+    targets = [],
+    experience = [],
+    stats = {
+      questionsSolved: 0,
+      practiceHours: 0,
+      mockSessions: 0,
+      weeklyImprovement: 0,
+    },
+  } = data;
   const initials = user.name
     .split(" ")
     .map((p) => p[0])
@@ -1200,10 +1246,18 @@ function EditProfileSection({
     targets: string[],
   ) => void;
 }) {
-  const { user } = data;
+  const user = data.user ?? {
+    id: "",
+    name: "Candidate",
+    email: "",
+    title: "",
+    location: "",
+    about: "",
+    readinessScore: 0,
+  };
 
-  const [skills, setSkills] = useState<string[]>(data.skills);
-  const [targets, setTargets] = useState<string[]>(data.targets);
+  const [skills, setSkills] = useState<string[]>(data.skills ?? []);
+  const [targets, setTargets] = useState<string[]>(data.targets ?? []);
   const [newSkill, setNewSkill] = useState("");
   const [newTarget, setNewTarget] = useState("");
   const [form, setForm] = useState({
@@ -1632,6 +1686,12 @@ export default function CandidateDashboard() {
     setError("");
     try {
       const data = await fetchDashboard();
+
+      console.log("===== DASHBOARD RESPONSE =====");
+      console.log(data);
+      console.log("Practice Questions:", data.practiceQuestions);
+      console.log("Length:", data.practiceQuestions?.length);
+
       setDashboardData(data);
     } catch (err) {
       setError(
@@ -1658,7 +1718,7 @@ export default function CandidateDashboard() {
     );
   }
 
-  const userName = dashboardData?.user.name ?? "Candidate";
+  const userName = dashboardData?.user?.name ?? "Candidate";
   const userInitials = userName
     .split(" ")
     .map((p) => p[0])
@@ -1685,18 +1745,30 @@ export default function CandidateDashboard() {
 
     switch (activeSection) {
       case "dashboard":
-        return <DashboardSection data={dashboardData} />;
+        return (
+            <DashboardSection
+                data={dashboardData}
+            />
+        );
       case "practice":
-        return <PracticeSection questions={dashboardData.practiceQuestions} />;
+        return (
+            <PracticeSection
+                questions={dashboardData.practiceQuestions ?? []}
+            />
+        );
       case "mock":
         return (
-          <MockSection
-            result={dashboardData.lastMockResult}
-            sessions={dashboardData.mockSessions}
-          />
+            <MockSection
+                result={dashboardData.lastMockResult}
+                sessions={dashboardData.mockSessions ?? []}
+            />
         );
       case "rooms":
-        return <RoomsSection rooms={dashboardData.rooms} />;
+        return (
+            <RoomsSection
+                rooms={dashboardData.rooms ?? []}
+            />
+        );
       case "profile":
         return (
           <ProfileSection
@@ -1729,15 +1801,16 @@ export default function CandidateDashboard() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1
-            className="text-[#0d1b2a] leading-tight"
-            style={{
-              fontFamily: "'Roboto Slab', serif",
-              fontWeight: 700,
-              fontSize: "1.55rem",
-            }}
+              className="text-[#0d1b2a]"
+              style={{
+                fontFamily: "'Roboto Slab', serif",
+                fontWeight: 700,
+                fontSize: "1.55rem",
+              }}
           >
-            Welcome back, {dashboardData?.user.name.split(" ")[0] ?? "there"} 👋
+            Welcome back, {(dashboardData?.user?.name ?? "Candidate").split(" ")[0]} 👋
           </h1>
+
           <p className="text-[#4a6080] text-sm mt-0.5">
             Start your journey with us.
           </p>

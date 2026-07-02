@@ -35,7 +35,7 @@ public class PracticeQuestionController {
 
     // Get All Questions
     @GetMapping("/questions")
-    public List<PracticeQuestionResponse> getPracticeQuestions(
+    public List<PracticeQuestionResponse>  getPracticeQuestions(
             @RequestParam(required = false) String difficulty
     ) {
         return practiceQuestionService.getPracticeQuestions(difficulty);
