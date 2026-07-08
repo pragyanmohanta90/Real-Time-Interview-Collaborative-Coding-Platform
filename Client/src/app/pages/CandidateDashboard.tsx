@@ -59,16 +59,20 @@ import {
   deleteTargetApi,
 } from "../../services/candidateService";
 
+// User
+
 export interface UserProfile {
   id: string;
   name: string;
   email: string;
-  title: string;
-  location: string;
-  avatar?: string;
-  about: string;
+  title: string | null;
+  location: string | null;
+  avatar: string | null;
+  about: string | null;
   readinessScore: number;
 }
+
+// Dashboard Stats
 
 export interface DashboardStats {
   questionsSolved: number;
@@ -77,27 +81,36 @@ export interface DashboardStats {
   weeklyImprovement: number;
 }
 
-export interface SkillScore {
-  skill: string;
-  score: number;
+export interface SkillBreakdown {
+  confidence: number;
+  technical: number;
+  readiness: number;
+  problemSolving: number;
+  communication: number;
 }
+
+// Progress Chart
 
 export interface ProgressPoint {
   week: string;
   score: number;
 }
 
+// Practice Questions
+
 export interface PracticeQuestion {
-  id: number | string;
+  id: string;
   title: string;
-  difficulty: "Easy" | "Medium" | "Hard";
   topic: string;
+  difficulty: "EASY" | "MEDIUM" | "HARD";
   done: boolean;
-  time: string | null;
+  time: string;
 }
 
+// Mock Sessions
+
 export interface MockSession {
-  id: number | string;
+  id: string;
   type: string;
   duration: string;
   topics: string[];
@@ -105,6 +118,8 @@ export interface MockSession {
   date: string;
   status: "completed" | "scheduled";
 }
+
+// Mock Result
 
 export interface MockResult {
   session: string;
@@ -118,6 +133,8 @@ export interface MockResult {
   weaknesses: string[];
 }
 
+// Rooms
+
 export interface Room {
   id: string;
   title: string;
@@ -127,25 +144,42 @@ export interface Room {
   duration: string;
 }
 
+// Experience
+
 export interface Experience {
   role: string;
   company: string;
   period: string;
 }
 
+// Dashboard Response
+
 export interface DashboardResponse {
   user: UserProfile;
   stats: DashboardStats;
-  skillBreakdown: SkillScore[];
+  skillBreakdown: SkillBreakdown;
   progressHistory: ProgressPoint[];
   practiceQuestions: PracticeQuestion[];
-  mockSessions: MockSession[];
-  lastMockResult: MockResult;
-  rooms: Room[];
-  skills: string[];
-  targets: string[];
-  experience: Experience[];
+
+  mockSessions?: MockSession[];
+  lastMockResult?: MockResult | null;
+  rooms?: Room[];
+  skills?: string[];
+  targets?: string[];
+  experience?: Experience[];
 }
+
+// export interface SafeMockResult {
+//   session: string;
+//   overall: number;
+//   technical: number;
+//   readiness: number;
+//   confidence: number;
+//   communication: number;
+//   problemSolving: number;
+//   strengths: string[];
+//   weaknesses: string[];
+// }
 
 const navItems = [
   {
@@ -164,9 +198,9 @@ const navItems = [
 ];
 
 const diffColor: Record<string, string> = {
-  Easy: "text-emerald-600 bg-emerald-50 border-emerald-200",
-  Medium: "text-amber-600 bg-amber-50 border-amber-200",
-  Hard: "text-rose-600 bg-rose-50 border-rose-200",
+  EASY: "text-emerald-600 bg-emerald-50 border-emerald-200",
+  MEDIUM: "text-amber-600 bg-amber-50 border-amber-200",
+  HARD: "text-rose-600 bg-rose-50 border-rose-200",
 };
 
 function SectionHeader({
@@ -348,26 +382,39 @@ function DashboardSkeleton() {
 }
 
 function DashboardSection({ data }: { data: DashboardResponse }) {
-  const {
-    stats = {
-      questionsSolved: 0,
-      practiceHours: 0,
-      mockSessions: 0,
-      weeklyImprovement: 0,
+  const stats = data.stats ?? {
+    questionsSolved: 0,
+    practiceHours: 0,
+    mockSessions: 0,
+    weeklyImprovement: 0,
+  };
+
+  const progressHistory = data.progressHistory ?? [];
+
+  const mockSessions = data.mockSessions ?? [];
+
+  const skillBreakdown = [
+    {
+      skill: "Confidence",
+      score: data.skillBreakdown?.confidence ?? 0,
     },
-    progressHistory = [],
-    skillBreakdown = [],
-    mockSessions = [],
-    user = {
-      id: "",
-      name: "Candidate",
-      email: "",
-      title: "",
-      location: "",
-      about: "",
-      readinessScore: 0,
+    {
+      skill: "Technical",
+      score: data.skillBreakdown?.technical ?? 0,
     },
-  } = data;
+    {
+      skill: "Readiness",
+      score: data.skillBreakdown?.readiness ?? 0,
+    },
+    {
+      skill: "Problem Solving",
+      score: data.skillBreakdown?.problemSolving ?? 0,
+    },
+    {
+      skill: "Communication",
+      score: data.skillBreakdown?.communication ?? 0,
+    },
+  ];
 
   return (
     <div>
@@ -385,7 +432,7 @@ function DashboardSection({ data }: { data: DashboardResponse }) {
         <StatCard
           icon={<BarChart2 className="w-4.5 h-4.5" />}
           label="Readiness Score"
-          value={String(user.readinessScore)}
+          value={String(data?.user?.readinessScore)}
           sub="↑ this month"
           accent
         />
@@ -471,7 +518,7 @@ function DashboardSection({ data }: { data: DashboardResponse }) {
           >
             Skill Breakdown
           </p>
-          {skillBreakdown.length === 0 ? (
+          {skillBreakdown.every((s) => s.score === 0) ? (
             <EmptyState
               icon={<Brain className="w-5 h-5" />}
               title="No skill data yet"
@@ -501,7 +548,7 @@ function DashboardSection({ data }: { data: DashboardResponse }) {
         <p className="text-[#0d1b2a] text-sm mb-4" style={{ fontWeight: 600 }}>
           Recent & Upcoming Mock Sessions
         </p>
-        {mockSessions.length === 0 ? (
+        {(mockSessions ?? []).length === 0 ? (
           <EmptyState
             icon={<Calendar className="w-5 h-5" />}
             title="No mock sessions yet"
@@ -509,48 +556,57 @@ function DashboardSection({ data }: { data: DashboardResponse }) {
           />
         ) : (
           <div className="space-y-3">
-            {mockSessions.map((s) => (
-              <div
-                key={s.id}
-                className="flex items-center gap-4 p-3.5 rounded-xl bg-[#f0f4f8] hover:bg-[#e8f0f7] transition-colors"
-              >
+            {mockSessions.map((s) => {
+              const isCompleted = s.status === "COMPLETED";
+
+              return (
                 <div
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${s.status === "completed" ? "bg-[#00bfa6]/15" : "bg-[#0d1b2a]/8"}`}
+                  key={`${s.title}-${s.date}`}
+                  className="flex items-center gap-4 p-3.5 rounded-xl bg-[#f0f4f8] hover:bg-[#e8f0f7] transition-colors"
                 >
-                  {s.status === "completed" ? (
-                    <CheckCircle className="w-4 h-4 text-[#00bfa6]" />
+                  <div
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                      isCompleted ? "bg-[#00bfa6]/15" : "bg-[#0d1b2a]/8"
+                    }`}
+                  >
+                    {isCompleted ? (
+                      <CheckCircle className="w-4 h-4 text-[#00bfa6]" />
+                    ) : (
+                      <Calendar className="w-4 h-4 text-[#4a6080]" />
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className="text-[#0d1b2a] text-sm"
+                      style={{ fontWeight: 500 }}
+                    >
+                      {s.title}
+                    </p>
+
+                    <p className="text-[#4a6080] text-xs">
+                      {s.date} · {s.duration}
+                    </p>
+                  </div>
+
+                  {s.score !== null ? (
+                    <span
+                      className="text-[#00bfa6] text-sm"
+                      style={{ fontWeight: 700 }}
+                    >
+                      {s.score}/100
+                    </span>
                   ) : (
-                    <Calendar className="w-4 h-4 text-[#4a6080]" />
+                    <span
+                      className="text-xs bg-amber-100 text-amber-700 border border-amber-200 px-2.5 py-1 rounded-full"
+                      style={{ fontWeight: 500 }}
+                    >
+                      Scheduled
+                    </span>
                   )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p
-                    className="text-[#0d1b2a] text-sm"
-                    style={{ fontWeight: 500 }}
-                  >
-                    {s.type}
-                  </p>
-                  <p className="text-[#4a6080] text-xs">
-                    {s.date} · {s.duration}
-                  </p>
-                </div>
-                {s.score !== null ? (
-                  <span
-                    className="text-[#00bfa6] text-sm"
-                    style={{ fontWeight: 700 }}
-                  >
-                    {s.score}/100
-                  </span>
-                ) : (
-                  <span
-                    className="text-xs bg-amber-100 text-amber-700 border border-amber-200 px-2.5 py-1 rounded-full"
-                    style={{ fontWeight: 500 }}
-                  >
-                    Scheduled
-                  </span>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -558,12 +614,8 @@ function DashboardSection({ data }: { data: DashboardResponse }) {
   );
 }
 
-function PracticeSection({
-                           questions = [],
-                         }: {
-  questions?: PracticeQuestion[];
-}) {
-  const [filter, setFilter] = useState<"All" | "Easy" | "Medium" | "Hard">(
+function PracticeSection({ questions }: { questions: PracticeQuestion[] }) {
+  const [filter, setFilter] = useState<"All" | "EASY" | "MEDIUM" | "HARD">(
     "All",
   );
   const filtered =
@@ -579,18 +631,23 @@ function PracticeSection({
         subtitle="Curated by role and difficulty. Solve daily to boost your score."
       />
       <div className="flex gap-2 mb-5">
-        {(["All", "Easy", "Medium", "Hard"] as const).map((f) => (
+        {[
+          { value: "All", label: "All" },
+          { value: "EASY", label: "Easy" },
+          { value: "MEDIUM", label: "Medium" },
+          { value: "HARD", label: "Hard" },
+        ].map((f) => (
           <button
-            key={f}
-            onClick={() => setFilter(f)}
+            key={f.value}
+            onClick={() => setFilter(f.value)}
             className={`px-4 py-1.5 rounded-full text-sm border transition-all ${
-              filter === f
+              filter === f.value
                 ? "bg-[#0d1b2a] text-white border-[#0d1b2a]"
                 : "bg-white text-[#4a6080] border-[#0d1b2a]/12 hover:border-[#0d1b2a]/25"
             }`}
-            style={{ fontWeight: filter === f ? 600 : 400 }}
+            style={{ fontWeight: filter === f.value ? 600 : 400 }}
           >
-            {f}
+            {f.label}
           </button>
         ))}
         <div className="ml-auto text-[#4a6080] text-sm flex items-center gap-1.5">
@@ -639,7 +696,7 @@ function PracticeSection({
                 className={`text-xs px-2.5 py-0.5 rounded-full border ${diffColor[q.difficulty]}`}
                 style={{ fontWeight: 500 }}
               >
-                {q.difficulty}
+                {q.difficulty.charAt(0) + q.difficulty.slice(1).toLowerCase()}
               </span>
               {q.time ? (
                 <span className="text-[#4a6080] text-xs flex items-center gap-1">
@@ -664,44 +721,13 @@ function PracticeSection({
 }
 
 function MockSection({
-                       result,
-                       sessions = [],
-                     }: {
+  result,
+  sessions,
+}: {
   result: MockResult | null;
-  sessions?: MockSession[];
+  sessions: MockSession[];
 }) {
   const completedSessions = sessions.filter((s) => s.status === "completed");
-
-  const types = [
-    {
-      icon: <Code2 className="w-5 h-5" />,
-      title: "Technical Round",
-      desc: "DSA, system design, and coding challenges with real-time code execution.",
-      duration: "45 min",
-      locked: false,
-    },
-    {
-      icon: <MessageSquare className="w-5 h-5" />,
-      title: "Behavioral Round",
-      desc: "STAR-method questions evaluated by AI for structure and impact.",
-      duration: "30 min",
-      locked: false,
-    },
-    {
-      icon: <Zap className="w-5 h-5" />,
-      title: "System Design",
-      desc: "Design scalable systems. AI whiteboard + feedback on your architecture.",
-      duration: "60 min",
-      locked: false,
-    },
-    {
-      icon: <Mic className="w-5 h-5" />,
-      title: "Full Loop Simulation",
-      desc: "Back-to-back rounds mimicking a real 4-hour interview loop.",
-      duration: "3.5 hrs",
-      locked: true,
-    },
-  ];
 
   const scoreMetrics = result
     ? [
@@ -964,11 +990,7 @@ function MockSection({
   );
 }
 
-function RoomsSection({
-                        rooms = [],
-                      }: {
-  rooms?: Room[];
-}) {
+function RoomsSection({ rooms }: { rooms: Room[] }) {
   return (
     <div>
       <SectionHeader
@@ -1052,26 +1074,7 @@ function ProfileSection({
   data: DashboardResponse;
   onEdit: () => void;
 }) {
-  const {
-    user = {
-      id: "",
-      name: "Candidate",
-      email: "",
-      title: "",
-      location: "",
-      about: "",
-      readinessScore: 0,
-    },
-    skills = [],
-    targets = [],
-    experience = [],
-    stats = {
-      questionsSolved: 0,
-      practiceHours: 0,
-      mockSessions: 0,
-      weeklyImprovement: 0,
-    },
-  } = data;
+  const { user, skills = [], targets = [], experience = [], stats } = data;
   const initials = user.name
     .split(" ")
     .map((p) => p[0])
@@ -1246,15 +1249,7 @@ function EditProfileSection({
     targets: string[],
   ) => void;
 }) {
-  const user = data.user ?? {
-    id: "",
-    name: "Candidate",
-    email: "",
-    title: "",
-    location: "",
-    about: "",
-    readinessScore: 0,
-  };
+  const { user } = data;
 
   const [skills, setSkills] = useState<string[]>(data.skills ?? []);
   const [targets, setTargets] = useState<string[]>(data.targets ?? []);
@@ -1686,12 +1681,6 @@ export default function CandidateDashboard() {
     setError("");
     try {
       const data = await fetchDashboard();
-
-      console.log("===== DASHBOARD RESPONSE =====");
-      console.log(data);
-      console.log("Practice Questions:", data.practiceQuestions);
-      console.log("Length:", data.practiceQuestions?.length);
-
       setDashboardData(data);
     } catch (err) {
       setError(
@@ -1745,30 +1734,18 @@ export default function CandidateDashboard() {
 
     switch (activeSection) {
       case "dashboard":
-        return (
-            <DashboardSection
-                data={dashboardData}
-            />
-        );
+        return <DashboardSection data={dashboardData} />;
       case "practice":
-        return (
-            <PracticeSection
-                questions={dashboardData.practiceQuestions ?? []}
-            />
-        );
+        return <PracticeSection questions={dashboardData.practiceQuestions} />;
       case "mock":
         return (
-            <MockSection
-                result={dashboardData.lastMockResult}
-                sessions={dashboardData.mockSessions ?? []}
-            />
+          <MockSection
+            result={dashboardData.lastMockResult ?? null}
+            sessions={dashboardData.mockSessions ?? []}
+          />
         );
       case "rooms":
-        return (
-            <RoomsSection
-                rooms={dashboardData.rooms ?? []}
-            />
-        );
+        return <RoomsSection rooms={dashboardData.rooms ?? []} />;
       case "profile":
         return (
           <ProfileSection
@@ -1801,23 +1778,22 @@ export default function CandidateDashboard() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1
-              className="text-[#0d1b2a]"
-              style={{
-                fontFamily: "'Roboto Slab', serif",
-                fontWeight: 700,
-                fontSize: "1.55rem",
-              }}
+            className="text-[#0d1b2a] leading-tight"
+            style={{
+              fontFamily: "'Roboto Slab', serif",
+              fontWeight: 700,
+              fontSize: "1.55rem",
+            }}
           >
-            Welcome back, {(dashboardData?.user?.name ?? "Candidate").split(" ")[0]} 👋
+            Welcome back, {dashboardData?.user?.name ?? "there"} 👋
           </h1>
-
           <p className="text-[#4a6080] text-sm mt-0.5">
             Start your journey with us.
           </p>
         </div>
         <button
           // onClick={() => setActiveSection("mock")}
-          onClick={() => navigate("/mock")}
+          onClick={() => navigate("/ai-mock")}
           className="hidden sm:flex items-center gap-2 bg-[#00bfa6] text-[#0d1b2a] px-5 py-2.5 rounded-xl hover:bg-[#00d4b8] transition-colors"
           style={{ fontWeight: 600, fontSize: "0.875rem" }}
         >

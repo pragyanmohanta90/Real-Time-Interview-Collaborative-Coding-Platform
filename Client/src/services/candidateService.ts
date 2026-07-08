@@ -5,12 +5,79 @@ import type {
 } from "../app/pages/CandidateDashboard";
 
 export const fetchDashboard = async (): Promise<DashboardResponse> => {
-  const { data } = await API.get("/candidate/dashboard");
-  return data;
+  const res = await API.get("/candidate/dashboard");
+
+  // console.log("RAW DASHBOARD RESPONSE:", res);
+  console.log(typeof res.data);
+
+  const data = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
+
+  return {
+    ...data,
+
+    user: {
+      id: data.user?.id ?? "",
+      name: data.user?.name ?? "",
+      email: data.user?.email ?? "",
+      title: data.user?.title ?? "",
+      location: data.user?.location ?? "",
+      about: data.user?.about ?? "",
+      readinessScore: data.user?.readinessScore ?? 0,
+    },
+
+    stats: {
+      questionsSolved: data.stats?.questionsSolved ?? 0,
+      practiceHours: data.stats?.practiceHours ?? 0,
+      mockSessions: data.stats?.mockSessions ?? 0,
+      weeklyImprovement: data.stats?.weeklyImprovement ?? 0,
+    },
+
+    skillBreakdown: data.skillBreakdown ?? {
+      confidence: 0,
+      technical: 0,
+      readiness: 0,
+      problemSolving: 0,
+      communication: 0,
+    },
+
+    progressHistory: Array.isArray(data.progressHistory)
+      ? data.progressHistory
+      : [],
+
+    practiceQuestions: Array.isArray(data.practiceQuestions)
+      ? data.practiceQuestions
+      : [],
+
+    mockSessions: Array.isArray(data.mockSessions) ? data.mockSessions : [],
+
+    rooms: Array.isArray(data.rooms) ? data.rooms : [],
+
+    skills: Array.isArray(data.skills) ? data.skills : [],
+
+    targets: Array.isArray(data.targets) ? data.targets : [],
+
+    experience: Array.isArray(data.experience) ? data.experience : [],
+
+    lastMockResult: {
+      session: data.lastMockResult?.session ?? "",
+      overall: data.lastMockResult?.overall ?? 0,
+      technical: data.lastMockResult?.technical ?? 0,
+      readiness: data.lastMockResult?.readiness ?? 0,
+      confidence: data.lastMockResult?.confidence ?? 0,
+      communication: data.lastMockResult?.communication ?? 0,
+      problemSolving: data.lastMockResult?.problemSolving ?? 0,
+      strengths: Array.isArray(data.lastMockResult?.strengths)
+        ? data.lastMockResult.strengths
+        : [],
+      weaknesses: Array.isArray(data.lastMockResult?.weaknesses)
+        ? data.lastMockResult.weaknesses
+        : [],
+    },
+  };
 };
 
 export const updateProfile = async (
-  payload: Partial<UserProfile>
+  payload: Partial<UserProfile>,
 ): Promise<UserProfile> => {
   const { data } = await API.put("/candidate/profile", payload);
   return data;
