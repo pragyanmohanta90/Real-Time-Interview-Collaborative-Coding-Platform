@@ -41,12 +41,12 @@ export const fetchDashboard = async (): Promise<DashboardResponse> => {
     },
 
     progressHistory: Array.isArray(data.progressHistory)
-        ? data.progressHistory
-        : [],
+      ? data.progressHistory
+      : [],
 
     practiceQuestions: Array.isArray(data.practiceQuestions)
-        ? data.practiceQuestions
-        : [],
+      ? data.practiceQuestions
+      : [],
 
     mockSessions: Array.isArray(data.mockSessions) ? data.mockSessions : [],
 
@@ -67,17 +67,17 @@ export const fetchDashboard = async (): Promise<DashboardResponse> => {
       communication: data.lastMockResult?.communication ?? 0,
       problemSolving: data.lastMockResult?.problemSolving ?? 0,
       strengths: Array.isArray(data.lastMockResult?.strengths)
-          ? data.lastMockResult.strengths
-          : [],
+        ? data.lastMockResult.strengths
+        : [],
       weaknesses: Array.isArray(data.lastMockResult?.weaknesses)
-          ? data.lastMockResult.weaknesses
-          : [],
+        ? data.lastMockResult.weaknesses
+        : [],
     },
   };
 };
 
 export const updateProfile = async (
-    payload: Partial<UserProfile>,
+  payload: Partial<UserProfile>,
 ): Promise<UserProfile> => {
   const { data } = await API.put("/candidate/profile", payload);
   return data;
