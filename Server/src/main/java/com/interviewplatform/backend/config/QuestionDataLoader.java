@@ -9,6 +9,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Component;
+import com.interviewplatform.backend.importer.parser.JavaSignatureParser;
+import com.interviewplatform.backend.importer.parser.ExampleParser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,11 +20,19 @@ public class QuestionDataLoader implements CommandLineRunner {
 
     private final QuestionRepository questionRepository;
     private final ObjectMapper objectMapper;
+    private final JavaSignatureParser javaSignatureParser;
+    private final ExampleParser exampleParser;
 
-    public QuestionDataLoader(QuestionRepository questionRepository,
-                              ObjectMapper objectMapper) {
+    public QuestionDataLoader(
+            QuestionRepository questionRepository,
+            ObjectMapper objectMapper,
+            JavaSignatureParser javaSignatureParser,
+            ExampleParser exampleParser
+    ) {
         this.questionRepository = questionRepository;
         this.objectMapper = objectMapper;
+        this.javaSignatureParser = javaSignatureParser;
+        this.exampleParser = exampleParser;
     }
 
     @Override
@@ -80,6 +90,13 @@ public class QuestionDataLoader implements CommandLineRunner {
 
                 question.setStarterCode(starterCode);
 
+                // Execution Metadata
+                if (starterCode.getJava() != null) {
+                    question.setExecutionMetadata(
+                            javaSignatureParser.parse(starterCode.getJava())
+                    );
+                }
+
                 List<Example> examples = new ArrayList<>();
 
                 if (json.getExamples() != null) {
@@ -134,9 +151,12 @@ public class QuestionDataLoader implements CommandLineRunner {
 
                 question.setExamples(examples);
 
-                question.setEstimatedTime(15);
+                // Generate Test Cases From Examples
+                question.setTestCases(
+                        exampleParser.parse(examples)
+                );
 
-                question.setTestCases(new ArrayList<>());
+                question.setEstimatedTime(15);
 
                 questionRepository.save(question);
 

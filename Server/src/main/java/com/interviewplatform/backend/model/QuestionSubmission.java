@@ -25,6 +25,10 @@ public class QuestionSubmission {
 
     private Integer totalTestCases;
 
+    private String runtime;
+
+    private String memory;
+
     private LocalDateTime submittedAt;
 
     public QuestionSubmission() {
@@ -100,5 +104,25 @@ public class QuestionSubmission {
 
     public void setSubmittedAt(LocalDateTime submittedAt) {
         this.submittedAt = submittedAt;
+    }
+
+    // Getter
+    public String getRuntime() {
+        return runtime;
+    }
+
+    // Setter
+    public void setRuntime(String runtime) {
+        this.runtime = runtime;
+    }
+
+    // Getter
+    public String getMemory() {
+        return memory;
+    }
+
+    // Setter
+    public void setMemory(String memory) {
+        this.memory = memory;
     }
 }

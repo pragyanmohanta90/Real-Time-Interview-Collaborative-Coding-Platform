@@ -1,62 +1,57 @@
-package com.interviewplatform.backend.model;
+package com.interviewplatform.backend.candidate.dto.codeeditor;
 
-import java.util.List;
+public class TestCaseResponse {
 
-public class TestCase {
-
-    // Original input string
+    // Input
     private String input;
 
-    // Parsed arguments
-    private List<String> arguments;
-
-    // Expected output
+    // Expected Output
     private String expectedOutput;
 
-    // Hidden test case
+    // Hidden Test Case
     private boolean hidden;
 
-    public TestCase() {
+    // Default Constructor
+    public TestCaseResponse() {
     }
 
-    public TestCase(String input,
-                    List<String> arguments,
-                    String expectedOutput,
-                    boolean hidden) {
+    // Parameterized Constructor
+    public TestCaseResponse(
+            String input,
+            String expectedOutput,
+            boolean hidden
+    ) {
         this.input = input;
-        this.arguments = arguments;
         this.expectedOutput = expectedOutput;
         this.hidden = hidden;
     }
 
+    // Getter
     public String getInput() {
         return input;
     }
 
+    // Setter
     public void setInput(String input) {
         this.input = input;
     }
 
-    public List<String> getArguments() {
-        return arguments;
-    }
-
-    public void setArguments(List<String> arguments) {
-        this.arguments = arguments;
-    }
-
+    // Getter
     public String getExpectedOutput() {
         return expectedOutput;
     }
 
+    // Setter
     public void setExpectedOutput(String expectedOutput) {
         this.expectedOutput = expectedOutput;
     }
 
+    // Getter
     public boolean isHidden() {
         return hidden;
     }
 
+    // Setter
     public void setHidden(boolean hidden) {
         this.hidden = hidden;
     }

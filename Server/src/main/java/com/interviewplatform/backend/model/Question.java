@@ -33,6 +33,9 @@ public class Question {
 
     private StarterCode starterCode;
 
+    // Execution Metadata
+    private ExecutionMetadata executionMetadata;
+
     private List<TestCase> testCases;
 
     public Question() {
@@ -140,5 +143,13 @@ public class Question {
 
     public void setTestCases(List<TestCase> testCases) {
         this.testCases = testCases;
+    }
+
+    public ExecutionMetadata getExecutionMetadata() {
+        return executionMetadata;
+    }
+
+    public void setExecutionMetadata(ExecutionMetadata executionMetadata) {
+        this.executionMetadata = executionMetadata;
     }
 }

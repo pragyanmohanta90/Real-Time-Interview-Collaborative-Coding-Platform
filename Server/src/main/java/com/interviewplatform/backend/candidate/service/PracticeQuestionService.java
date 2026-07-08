@@ -1,5 +1,6 @@
 package com.interviewplatform.backend.candidate.service;
 
+import com.interviewplatform.backend.candidate.dto.codeeditor.StarterCodeResponse;
 import com.interviewplatform.backend.candidate.dto.practice.PracticeQuestionDetailResponse;
 import com.interviewplatform.backend.candidate.dto.practice.PracticeQuestionResponse;
 import com.interviewplatform.backend.candidate.dto.practice.SubmissionResponse;
@@ -10,9 +11,11 @@ import com.interviewplatform.backend.model.User;
 import com.interviewplatform.backend.repository.QuestionRepository;
 import com.interviewplatform.backend.service.UserService;
 import org.springframework.stereotype.Service;
-
+import com.interviewplatform.backend.candidate.dto.codeeditor.TestCaseResponse;
+import com.interviewplatform.backend.model.TestCase;
 import java.util.ArrayList;
 import java.util.List;
+
 
 @Service
 public class PracticeQuestionService {
@@ -135,6 +138,91 @@ public class PracticeQuestionService {
 
         if (question.getStarterCode() != null) {
             response.setStarterCode(question.getStarterCode().getJava());
+        }
+
+        return response;
+    }
+
+    // Get Starter Code
+    public StarterCodeResponse getStarterCode(
+            String questionId,
+            String language
+    ) {
+
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new RuntimeException("Question not found"));
+
+        if (question.getStarterCode() == null) {
+            throw new RuntimeException("Starter code not available");
+        }
+
+        String code;
+
+        switch (language.toLowerCase()) {
+
+            case "java":
+                code = question.getStarterCode().getJava();
+                break;
+
+            case "python":
+                code = question.getStarterCode().getPython();
+                break;
+
+            case "cpp":
+            case "c++":
+                code = question.getStarterCode().getCpp();
+                break;
+
+            case "javascript":
+            case "js":
+                code = question.getStarterCode().getJavascript();
+                break;
+
+            default:
+                throw new RuntimeException("Unsupported language");
+        }
+
+        return new StarterCodeResponse(language, code);
+    }
+
+    // Get Test Cases
+    public List<TestCaseResponse> getTestCases(String questionId) {
+
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new RuntimeException("Question not found"));
+
+        List<TestCaseResponse> response = new ArrayList<>();
+
+        // Use actual test cases if available
+        if (question.getTestCases() != null && !question.getTestCases().isEmpty()) {
+
+            for (TestCase testCase : question.getTestCases()) {
+
+                response.add(
+                        new TestCaseResponse(
+                                testCase.getInput(),
+                                testCase.getExpectedOutput(),
+                                testCase.isHidden()
+                        )
+                );
+            }
+
+            return response;
+        }
+
+        // Fallback to examples
+        if (question.getExamples() != null) {
+
+            for (Example example : question.getExamples()) {
+
+                response.add(
+                        new TestCaseResponse(
+                                example.getInput(),
+                                example.getOutput(),
+                                false
+                        )
+                );
+            }
         }
 
         return response;

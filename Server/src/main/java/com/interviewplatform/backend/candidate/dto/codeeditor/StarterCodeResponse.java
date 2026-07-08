@@ -1,15 +1,21 @@
-package com.interviewplatform.backend.candidate.dto.practice;
+package com.interviewplatform.backend.candidate.dto.codeeditor;
 
-public class SubmitCodeRequest {
+public class StarterCodeResponse {
 
-    // Programming Language
+    // Language
     private String language;
 
-    // User Source Code
+    // Starter Code
     private String code;
 
     // Default Constructor
-    public SubmitCodeRequest() {
+    public StarterCodeResponse() {
+    }
+
+    // Parameterized Constructor
+    public StarterCodeResponse(String language, String code) {
+        this.language = language;
+        this.code = code;
     }
 
     // Getter
