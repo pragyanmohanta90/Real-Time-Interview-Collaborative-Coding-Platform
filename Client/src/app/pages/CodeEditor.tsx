@@ -9,14 +9,22 @@ import {
   ThumbsUp, MessageSquare, FileText,
   ChevronLeft, ChevronRight,
 } from "lucide-react";
-import { getQuestion } from "../../services/questionService";
+import {
+  getQuestion,
+  getStarterCode,
+  getTestCases,
+  runCode,
+  submitCode,
+} from "../../services/questionService";
+import { useParams } from "react-router-dom";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
+type Difficulty = "Easy" | "Medium" | "Hard";
 interface Problem {
   id: string;
   title: string;
-  difficulty: string;
+  difficulty: Difficulty;
   likes: number;
   acceptance: string;
   description: string;
@@ -57,36 +65,9 @@ interface RunResult {
 
 // ── Static Data ────────────────────────────────────────────────────────────────
 
-const PROBLEM = {
-  id: 1,
-  title: "Two Sum",
-  difficulty: "Easy" as "Easy" | "Medium" | "Hard",
-  acceptance: "52.3%",
-  likes: 54821,
-  tags: ["Array", "Hash Table"],
-  description: `Given an array of integers \`nums\` and an integer \`target\`, return _indices of the two numbers such that they add up to \`target\`_.
 
-You may assume that each input would have **exactly one solution**, and you may not use the same element twice.
 
-You can return the answer in any order.`,
-  examples: [
-    {
-      input: "nums = [2,7,11,15], target = 9",
-      output: "[0,1]",
-      explanation: "Because nums[0] + nums[1] == 9, we return [0, 1].",
-    },
-    { input: "nums = [3,2,4], target = 6", output: "[1,2]", explanation: null },
-    { input: "nums = [3,3], target = 6", output: "[0,1]", explanation: null },
-  ],
-  constraints: [
-    "2 ≤ nums.length ≤ 10⁴",
-    "-10⁹ ≤ nums[i] ≤ 10⁹",
-    "-10⁹ ≤ target ≤ 10⁹",
-    "Only one valid answer exists.",
-  ],
-};
-
-const LANGUAGES = ["Python3", "JavaScript", "C++", "Java", "Go", "Rust"];
+const LANGUAGES = ["Python3", "JavaScript", "C++", "Java"];
 const MONACO_LANGUAGES: Record<string, string> = {
   Python3: "python",
   JavaScript: "javascript",
@@ -96,97 +77,9 @@ const MONACO_LANGUAGES: Record<string, string> = {
   Rust: "rust",
 };
 
-const STARTER_CODE: Record<string, string> = {
-  Python3: `from typing import List
 
-class Solution:
-    def twoSum(self, nums: List[int], target: int) -> List[int]:
-        seen = {}
-        for i, num in enumerate(nums):
-            complement = target - num
-            if complement in seen:
-                return [seen[complement], i]
-            seen[num] = i
-        return []`,
-  JavaScript: `/**
- * @param {number[]} nums
- * @param {number} target
- * @return {number[]}
- */
-var twoSum = function(nums, target) {
-    const map = new Map();
-    for (let i = 0; i < nums.length; i++) {
-        const complement = target - nums[i];
-        if (map.has(complement)) {
-            return [map.get(complement), i];
-        }
-        map.set(nums[i], i);
-    }
-    return [];
-};`,
-  "C++": `class Solution {
-public:
-    vector<int> twoSum(vector<int>& nums, int target) {
-        unordered_map<int, int> seen;
-        for (int i = 0; i < (int)nums.size(); i++) {
-            int complement = target - nums[i];
-            if (seen.count(complement)) {
-                return {seen[complement], i};
-            }
-            seen[nums[i]] = i;
-        }
-        return {};
-    }
-};`,
-  Java: `import java.util.HashMap;
-import java.util.Map;
 
-class Solution {
-    public int[] twoSum(int[] nums, int target) {
-        Map<Integer, Integer> seen = new HashMap<>();
-        for (int i = 0; i < nums.length; i++) {
-            int complement = target - nums[i];
-            if (seen.containsKey(complement)) {
-                return new int[]{ seen.get(complement), i };
-            }
-            seen.put(nums[i], i);
-        }
-        return new int[]{};
-    }
-}`,
-  Go: `func twoSum(nums []int, target int) []int {
-    seen := make(map[int]int)
-    for i, num := range nums {
-        complement := target - num
-        if j, ok := seen[complement]; ok {
-            return []int{j, i}
-        }
-        seen[num] = i
-    }
-    return nil
-}`,
-  Rust: `use std::collections::HashMap;
 
-impl Solution {
-    pub fn two_sum(nums: Vec<i32>, target: i32) -> Vec<i32> {
-        let mut seen: HashMap<i32, i32> = HashMap::new();
-        for (i, &num) in nums.iter().enumerate() {
-            let complement = target - num;
-            if let Some(&j) = seen.get(&complement) {
-                return vec![j, i as i32];
-            }
-            seen.insert(num, i as i32);
-        }
-        vec![]
-    }
-}`,
-};
-
-const TEST_CASES: TestCase[] = [
-  { id: 1, input: "nums = [2,7,11,15]\ntarget = 9", expected: "[0,1]" },
-  { id: 2, input: "nums = [3,2,4]\ntarget = 6", expected: "[1,2]" },
-  { id: 3, input: "nums = [3,3]\ntarget = 6", expected: "[0,1]" },
-];
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
@@ -413,17 +306,17 @@ export default function CodeEditor() {
   const [bottomTab, setBottomTab] = useState("testcases");
   const [lang, setLang] = useState("Python3");
   const [langOpen, setLangOpen] = useState(false);
-  const [codes, setCodes] = useState<Record<string, string>>(
-    Object.fromEntries(
-      LANGUAGES.map((lang) => [lang, STARTER_CODE[lang]])
-    )
-  );
+  const [codes, setCodes] = useState<Record<string, string>>({});
   const [activeCase, setActiveCase] = useState(0);
 
   // Execution
   const [running, setRunning] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<RunResult | null>(null);
+
+  const { questionId } = useParams<{ questionId: string }>();
+  const [testCases, setTestCases] = useState<any[]>([]);
+  const currentTestCase = testCases[activeCase];
 
   // Drag refs
   const containerRef = useRef<HTMLDivElement>(null);
@@ -464,52 +357,86 @@ export default function CodeEditor() {
       window.removeEventListener("mouseup", onUp);
     };
   }, []);
+  useEffect(() => {
+    if (!questionId) return;
 
-  const handleLangChange = (l: string) => {
+    const loadEditor = async () => {
+      try {
+        const starter = await getStarterCode(questionId, lang);
+        const cases = await getTestCases(questionId);
+
+        setCodes({
+          [lang]: starter.code,
+        });
+
+        setTestCases(cases);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    loadEditor();
+  }, [questionId]);
+
+  const handleLangChange = async (l: string) => {
     setLang(l);
     setLangOpen(false);
+
+    if (!questionId) return;
+
+    try {
+      const starter = await getStarterCode(questionId, l);
+
+      setCodes((prev) => ({
+        ...prev,
+        [l]: starter.code,
+      }));
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleRun = async () => {
-    setRunning(true);
-    setBottomTab("output");
-    setResult(null);
-    await new Promise((r) => setTimeout(r, 1300));
-    setResult({
-      type: "run",
-      passed: 3,
-      total: 3,
-      runtime: "48 ms",
-      memory: "17.4 MB",
-      outputs: TEST_CASES.map((tc) => ({
-        input: tc.input,
-        expected: tc.expected,
-        got: tc.expected,
-        passed: true,
-      })),
-    });
-    setRunning(false);
+    if (!questionId) return;
+
+    try {
+      setRunning(true);
+      setBottomTab("output");
+      setResult(null);
+
+      const response = await runCode({
+        questionId,
+        language: lang,
+        code: codes[lang],
+      });
+
+      setResult(response);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setRunning(false);
+    }
   };
 
   const handleSubmit = async () => {
-    setSubmitting(true);
-    setBottomTab("output");
-    setResult(null);
-    await new Promise((r) => setTimeout(r, 2100));
-    setResult({
-      type: "submit",
-      passed: 57,
-      total: 57,
-      runtime: "48 ms",
-      memory: "17.4 MB",
-      outputs: TEST_CASES.map((tc) => ({
-        input: tc.input,
-        expected: tc.expected,
-        got: tc.expected,
-        passed: true,
-      })),
-    });
-    setSubmitting(false);
+    if (!questionId) return;
+
+    try {
+      setSubmitting(true);
+      setBottomTab("output");
+      setResult(null);
+
+      const response = await submitCode(questionId, {
+        language: lang,
+        code: codes[lang],
+      });
+
+      setResult(response);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -592,7 +519,7 @@ export default function CodeEditor() {
             onChange={setLeftTab}
           />
 
-          {leftTab === "description" && <ProblemDescription />}
+          {leftTab === "description" && <ProblemDescription questionId={questionId!} />}
 
           {leftTab === "solutions" && (
             <div className="flex-1 flex flex-col items-center justify-center gap-2 text-muted-foreground">
@@ -650,12 +577,20 @@ export default function CodeEditor() {
             <button
               className="p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
               title="Reset to starter code"
-              onClick={() =>
-                setCodes((prev) => ({
-                  ...prev,
-                  [lang]: STARTER_CODE[lang],
-                }))
-              }
+              onClick={async () => {
+                if (!questionId) return;
+
+                try {
+                  const starter = await getStarterCode(questionId, lang);
+
+                  setCodes((prev) => ({
+                    ...prev,
+                    [lang]: starter.code,
+                  }));
+                } catch (err) {
+                  console.error(err);
+                }
+              }}
             >
               <RotateCcw size={13} />
             </button>
@@ -759,7 +694,7 @@ export default function CodeEditor() {
               {bottomTab === "testcases" && (
                 <div className="space-y-3">
                   <div className="flex items-center gap-1.5">
-                    {TEST_CASES.map((tc, i) => (
+                    {testCases.map((tc, i) => (
                       <button
                         key={tc.id}
                         onClick={() => setActiveCase(i)}
@@ -780,13 +715,13 @@ export default function CodeEditor() {
                     <div>
                       <p className="text-xs text-muted-foreground mb-1.5">Input</p>
                       <div className="rounded-md border border-border bg-secondary/30 p-2.5 font-mono text-xs text-foreground/85 leading-5 whitespace-pre">
-                        {TEST_CASES[activeCase].input}
+                        {currentTestCase?.input || "No input available"}
                       </div>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground mb-1.5">Expected Output</p>
                       <div className="rounded-md border border-border bg-secondary/30 p-2.5 font-mono text-xs text-foreground/85 leading-5">
-                        {TEST_CASES[activeCase].expected}
+                        {currentTestCase?.expected || "No expected output"}
                       </div>
                     </div>
                   </div>
