@@ -9,8 +9,29 @@ import {
   ThumbsUp, MessageSquare, FileText,
   ChevronLeft, ChevronRight,
 } from "lucide-react";
+import { getQuestion } from "../../services/questionService";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
+
+interface Problem {
+  id: string;
+  title: string;
+  difficulty: string;
+  likes: number;
+  acceptance: string;
+  description: string;
+  examples: {
+    input: string;
+    output: string;
+    explanation?: string;
+  }[];
+  constraints: string[];
+  tags: string[];
+}
+
+interface ProblemDescriptionProps {
+  questionId: string;
+}
 
 interface TestCase {
   id: number;
@@ -213,25 +234,72 @@ function TabBar({
   );
 }
 
-function ProblemDescription() {
+function ProblemDescription({ questionId }: ProblemDescriptionProps) {
+  const [problem, setProblem] = useState<Problem | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchQuestion = async () => {
+      try {
+        setLoading(true);
+        const data = await getQuestion(questionId);
+        console.log("Fetched Question Data:", data); // Log the fetched data for debugging
+        setProblem(data);
+      } catch (error) {
+        console.error("Failed to load question:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (questionId) {
+      fetchQuestion();
+    }
+  }, [questionId]);
+
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        Loading question...
+      </div>
+    );
+  }
+
+  if (!problem) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        Failed to load question.
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 overflow-y-auto scrollbar-hide p-5 space-y-6">
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-2.5">
-          <span className="text-muted-foreground text-sm font-mono">{PROBLEM.id}.</span>
-          <h1 className="text-base font-semibold tracking-tight">{PROBLEM.title}</h1>
+          <span className="text-muted-foreground text-sm font-mono">
+            {problem.id}.
+          </span>
+          <h1 className="text-base font-semibold tracking-tight">
+            {problem.title}
+          </h1>
         </div>
+
         <div className="flex items-center gap-3 flex-wrap">
-          <DiffBadge level={PROBLEM.difficulty} />
+          <DiffBadge level={problem.difficulty} />
+
           <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
             <ThumbsUp size={12} />
-            <span>{PROBLEM.likes.toLocaleString()}</span>
+            <span>{problem.likes.toLocaleString()}</span>
           </button>
+
           <span className="text-xs text-muted-foreground flex items-center gap-1">
             <MessageSquare size={12} />
-            {PROBLEM.acceptance} acceptance
+            {problem.acceptance} acceptance
           </span>
+
           <button className="ml-auto text-muted-foreground hover:text-foreground transition-colors">
             <Bookmark size={14} />
           </button>
@@ -240,7 +308,7 @@ function ProblemDescription() {
 
       {/* Description */}
       <div className="text-sm leading-relaxed text-foreground/85 space-y-3">
-        {PROBLEM.description.split("\n\n").map((para, i) => (
+        {problem.description.split("\n\n").map((para, i) => (
           <p
             key={i}
             dangerouslySetInnerHTML={{
@@ -258,23 +326,28 @@ function ProblemDescription() {
 
       {/* Examples */}
       <div className="space-y-4">
-        {PROBLEM.examples.map((ex, i) => (
+        {problem.examples.map((ex, i) => (
           <div key={i}>
             <p className="text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">
               Example {i + 1}
             </p>
+
             <div className="rounded-md border border-border bg-secondary/30 p-3 space-y-1.5">
               <div className="font-mono text-xs leading-5">
                 <span className="text-muted-foreground">Input:&nbsp;&nbsp;</span>
                 <span className="text-foreground/90">{ex.input}</span>
               </div>
+
               <div className="font-mono text-xs leading-5">
                 <span className="text-muted-foreground">Output:&nbsp;</span>
                 <span className="text-foreground/90">{ex.output}</span>
               </div>
+
               {ex.explanation && (
                 <div className="pt-1.5 mt-1.5 border-t border-border text-xs text-muted-foreground leading-5">
-                  <span className="text-foreground/70">Explanation: </span>
+                  <span className="text-foreground/70">
+                    Explanation:{" "}
+                  </span>
                   {ex.explanation}
                 </div>
               )}
@@ -288,23 +361,30 @@ function ProblemDescription() {
         <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">
           Constraints
         </p>
+
         <ul className="space-y-1.5">
-          {PROBLEM.constraints.map((c, i) => (
+          {problem.constraints.map((constraint, i) => (
             <li key={i} className="flex items-start gap-2 text-xs">
-              <span className="text-muted-foreground mt-0.5 shrink-0">•</span>
-              <code className="font-mono text-foreground/85">{c}</code>
+              <span className="text-muted-foreground mt-0.5 shrink-0">
+                •
+              </span>
+
+              <code className="font-mono text-foreground/85">
+                {constraint}
+              </code>
             </li>
           ))}
         </ul>
       </div>
 
-      {/* Tags */}
+      {/* Topics */}
       <div>
         <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">
           Topics
         </p>
+
         <div className="flex flex-wrap gap-1.5">
-          {PROBLEM.tags.map((tag) => (
+          {problem.tags.map((tag) => (
             <span
               key={tag}
               className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs bg-secondary text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
@@ -352,13 +432,13 @@ export default function CodeEditor() {
   const vertDragging = useRef(false);
 
   const handleEditorMount = (_editor: any, monaco: any) => {
-  monaco.editor.defineTheme(
-    "night-owl",
-    nightOwlTheme as any
-  );
+    monaco.editor.defineTheme(
+      "night-owl",
+      nightOwlTheme as any
+    );
 
-  monaco.editor.setTheme("night-owl");
-};
+    monaco.editor.setTheme("night-owl");
+  };
 
   useEffect(() => {
     const onMove = (e: MouseEvent) => {

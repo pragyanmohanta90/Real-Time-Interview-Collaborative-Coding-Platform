@@ -35,7 +35,7 @@ export const router = createBrowserRouter([
     ErrorBoundary: RouteError,
   },
   {
-    path: "/codeeditor",
+    path: "/codeeditor/:id",
     Component: CodeEditor,
     ErrorBoundary: RouteError,
   },
