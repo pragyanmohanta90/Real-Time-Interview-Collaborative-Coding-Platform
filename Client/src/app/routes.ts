@@ -25,7 +25,7 @@ export const router = createBrowserRouter([
     Component: InterviewerDashboard,
   },
   {
-    path: "/CodeEditor",
+    path: "/codeeditor",
     Component: CodeEditor,
   },
   {
@@ -35,5 +35,9 @@ export const router = createBrowserRouter([
   {
     path: "/reset-password/:token",
     Component: ResetPassword,
+  },
+    {
+    path: "/codeeditor/:questionId",
+    Component: CodeEditor,
   },
 ]);

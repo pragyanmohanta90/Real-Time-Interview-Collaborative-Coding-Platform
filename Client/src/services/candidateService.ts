@@ -7,9 +7,6 @@ import type {
 export const fetchDashboard = async (): Promise<DashboardResponse> => {
   const res = await API.get("/candidate/dashboard");
 
-  // console.log("RAW DASHBOARD RESPONSE:", res);
-  console.log(typeof res.data);
-
   const data = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
 
   return {
@@ -105,4 +102,12 @@ export const addTargetApi = async (target: string) => {
 
 export const deleteTargetApi = async (id: string) => {
   await API.delete(`/candidate/targets/${id}`);
+};
+
+export const getQuestionById = async (id: string) => {
+  const { data } = await API.get(`/code-editor/questions/${id}`);
+
+  // console.log("Question Response:", data);
+
+  return data;
 };
