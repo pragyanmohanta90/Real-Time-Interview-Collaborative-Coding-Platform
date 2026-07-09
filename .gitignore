@@ -18,5 +18,5 @@ Server/target/
 .DS_Store
 Thumbs.db
 
-# environment variables
+# Environment variables
 .env
