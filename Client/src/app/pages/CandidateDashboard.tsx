@@ -12,15 +12,12 @@ import {
   TrendingUp,
   ChevronRight,
   Play,
-  Lock,
   Star,
-  Mic,
   Code2,
   MessageSquare,
   Users,
   Calendar,
   BarChart2,
-  Zap,
   Edit3,
   Brain,
   Target,
@@ -427,9 +424,9 @@ function DashboardSection({
   const averageScore =
     interviewHistory.length > 0
       ? Math.round(
-          interviewHistory.reduce((sum, item) => sum + item.score, 0) /
-            interviewHistory.length,
-        )
+        interviewHistory.reduce((sum, item) => sum + item.score, 0) /
+        interviewHistory.length,
+      )
       : 0;
 
   const progressHistory = interviewHistory
@@ -453,27 +450,27 @@ function DashboardSection({
 
   const skillBreakdown = evaluation
     ? [
-        {
-          skill: "Confidence",
-          score: evaluation.confidenceScore,
-        },
-        {
-          skill: "Technical",
-          score: evaluation.technicalScore,
-        },
-        {
-          skill: "Readiness",
-          score: evaluation.overallScore,
-        },
-        {
-          skill: "Problem Solving",
-          score: evaluation.problemSolvingScore,
-        },
-        {
-          skill: "Communication",
-          score: evaluation.communicationScore,
-        },
-      ]
+      {
+        skill: "Confidence",
+        score: evaluation.confidenceScore,
+      },
+      {
+        skill: "Technical",
+        score: evaluation.technicalScore,
+      },
+      {
+        skill: "Readiness",
+        score: evaluation.overallScore,
+      },
+      {
+        skill: "Problem Solving",
+        score: evaluation.problemSolvingScore,
+      },
+      {
+        skill: "Communication",
+        score: evaluation.communicationScore,
+      },
+    ]
     : [];
 
   return (
@@ -625,9 +622,8 @@ function DashboardSection({
                   className="flex items-center gap-4 p-3.5 rounded-xl bg-[#f0f4f8] hover:bg-[#e8f0f7] transition-colors"
                 >
                   <div
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                      isCompleted ? "bg-[#00bfa6]/15" : "bg-[#0d1b2a]/8"
-                    }`}
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${isCompleted ? "bg-[#00bfa6]/15" : "bg-[#0d1b2a]/8"
+                      }`}
                   >
                     {isCompleted ? (
                       <CheckCircle className="w-4 h-4 text-[#00bfa6]" />
@@ -683,6 +679,15 @@ function PracticeSection({ questions }: { questions: PracticeQuestion[] }) {
       ? questions
       : questions.filter((q) => q.difficulty === filter);
   const navigate = useNavigate();
+  const filters: {
+    value: "All" | "EASY" | "MEDIUM" | "HARD";
+    label: string;
+  }[] = [
+      { value: "All", label: "All" },
+      { value: "EASY", label: "Easy" },
+      { value: "MEDIUM", label: "Medium" },
+      { value: "HARD", label: "Hard" },
+    ];
 
   return (
     <div>
@@ -691,20 +696,14 @@ function PracticeSection({ questions }: { questions: PracticeQuestion[] }) {
         subtitle="Curated by role and difficulty. Solve daily to boost your score."
       />
       <div className="flex gap-2 mb-5">
-        {[
-          { value: "All", label: "All" },
-          { value: "EASY", label: "Easy" },
-          { value: "MEDIUM", label: "Medium" },
-          { value: "HARD", label: "Hard" },
-        ].map((f) => (
+        {filters.map((f) => (
           <button
             key={f.value}
             onClick={() => setFilter(f.value)}
-            className={`px-4 py-1.5 rounded-full text-sm border transition-all ${
-              filter === f.value
-                ? "bg-[#0d1b2a] text-white border-[#0d1b2a]"
-                : "bg-white text-[#4a6080] border-[#0d1b2a]/12 hover:border-[#0d1b2a]/25"
-            }`}
+            className={`px-4 py-1.5 rounded-full text-sm border transition-all ${filter === f.value
+              ? "bg-[#0d1b2a] text-white border-[#0d1b2a]"
+              : "bg-white text-[#4a6080] border-[#0d1b2a]/12 hover:border-[#0d1b2a]/25"
+              }`}
             style={{ fontWeight: filter === f.value ? 600 : 400 }}
           >
             {f.label}
@@ -796,37 +795,37 @@ function MockSection({
 
   const scoreMetrics = result
     ? [
-        {
-          label: "Technical",
-          score: result.technical,
-          color: "#0d1b2a",
-          icon: <Code2 className="w-4 h-4" />,
-        },
-        {
-          label: "Readiness",
-          score: result.readiness,
-          color: "#00bfa6",
-          icon: <Target className="w-4 h-4" />,
-        },
-        {
-          label: "Confidence",
-          score: result.confidence,
-          color: "#7c5cbf",
-          icon: <Brain className="w-4 h-4" />,
-        },
-        {
-          label: "Communication",
-          score: result.communication,
-          color: "#2196f3",
-          icon: <MessageSquare className="w-4 h-4" />,
-        },
-        {
-          label: "Problem-Solving",
-          score: result.problemSolving,
-          color: "#f59e0b",
-          icon: <Lightbulb className="w-4 h-4" />,
-        },
-      ]
+      {
+        label: "Technical",
+        score: result.technical,
+        color: "#0d1b2a",
+        icon: <Code2 className="w-4 h-4" />,
+      },
+      {
+        label: "Readiness",
+        score: result.readiness,
+        color: "#00bfa6",
+        icon: <Target className="w-4 h-4" />,
+      },
+      {
+        label: "Confidence",
+        score: result.confidence,
+        color: "#7c5cbf",
+        icon: <Brain className="w-4 h-4" />,
+      },
+      {
+        label: "Communication",
+        score: result.communication,
+        color: "#2196f3",
+        icon: <MessageSquare className="w-4 h-4" />,
+      },
+      {
+        label: "Problem-Solving",
+        score: result.problemSolving,
+        color: "#f59e0b",
+        icon: <Lightbulb className="w-4 h-4" />,
+      },
+    ]
     : [];
 
   return (
@@ -1335,9 +1334,9 @@ function EditProfileSection({
   const [form, setForm] = useState({
     name: user.name,
     email: user.email,
-    title: user.title,
-    location: user.location,
-    about: user.about,
+    title: user.title ?? "",
+    location: user.location ?? "",
+    about: user.about ?? "",
   });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -1822,26 +1821,26 @@ export default function CandidateDashboard() {
 
   const mockResult = latestInterview
     ? {
-        overall: latestInterview.evaluation.overallScore,
+      overall: latestInterview.evaluation.overallScore,
 
-        technical: latestInterview.evaluation.technicalScore,
+      technical: latestInterview.evaluation.technicalScore,
 
-        // If your backend doesn't provide readiness,
-        // decide whether to add it to the API or remove it from the UI.
-        readiness: latestInterview.evaluation.overallScore,
+      // If your backend doesn't provide readiness,
+      // decide whether to add it to the API or remove it from the UI.
+      readiness: latestInterview.evaluation.overallScore,
 
-        confidence: latestInterview.evaluation.confidenceScore,
+      confidence: latestInterview.evaluation.confidenceScore,
 
-        communication: latestInterview.evaluation.communicationScore,
+      communication: latestInterview.evaluation.communicationScore,
 
-        problemSolving: latestInterview.evaluation.problemSolvingScore,
+      problemSolving: latestInterview.evaluation.problemSolvingScore,
 
-        strengths: latestInterview.evaluation.strengths,
+      strengths: latestInterview.evaluation.strengths,
 
-        weaknesses: latestInterview.evaluation.weaknesses,
+      weaknesses: latestInterview.evaluation.weaknesses,
 
-        session: new Date(latestInterview.createdAt).toLocaleDateString(),
-      }
+      session: new Date(latestInterview.createdAt).toLocaleDateString(),
+    }
     : null;
 
   function renderBody() {
@@ -1883,6 +1882,7 @@ export default function CandidateDashboard() {
               type: item.role,
               date: new Date(item.createdAt).toLocaleDateString(),
               duration: item.difficulty,
+              topics: [],
               score: item.score,
               status: "completed",
             }))}
