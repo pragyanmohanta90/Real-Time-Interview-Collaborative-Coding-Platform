@@ -515,7 +515,7 @@ function DashboardSection({
             className="text-[#0d1b2a] text-sm mb-4"
             style={{ fontWeight: 600 }}
           >
-            Readiness Score — 8 Weeks
+            Readiness Score
           </p>
           {progressHistory.length === 0 ? (
             <EmptyState
