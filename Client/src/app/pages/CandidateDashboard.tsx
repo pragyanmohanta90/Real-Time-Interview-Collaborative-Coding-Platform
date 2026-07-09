@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router";
+import { motion } from "framer-motion";
 import {
   LayoutDashboard,
   BookOpen,
@@ -59,6 +60,7 @@ import {
   deleteTargetApi,
   getQuestionById,
 } from "../../services/candidateService";
+import { getHistory, getInterviewById } from "../../services/history";
 
 // User
 
@@ -308,22 +310,53 @@ function ErrorState({
   onRetry: () => void;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-rose-200 p-8 flex flex-col items-center text-center">
-      <div className="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center mb-4">
-        <AlertCircle className="w-6 h-6 text-rose-500" />
+    <motion.div
+      className="rounded-3xl border border-rose-200 bg-gradient-to-br from-rose-50 via-white to-orange-50 p-10"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
+    >
+      <div className="flex flex-col items-center text-center max-w-md mx-auto">
+        <motion.div
+          className="w-16 h-16 rounded-2xl bg-white shadow-sm border border-rose-100 flex items-center justify-center mb-5"
+          animate={{
+            y: [0, -6, 0],
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            repeatDelay: 2,
+          }}
+        >
+          <AlertCircle className="w-8 h-8 text-rose-500" />
+        </motion.div>
+
+        <h3
+          className="text-[#0d1b2a] text-xl mb-2"
+          style={{
+            fontFamily: "'Roboto Slab', serif",
+            fontWeight: 700,
+          }}
+        >
+          Oops! Something went wrong
+        </h3>
+
+        <p className="text-[#4a6080] text-sm leading-6 mb-6">{message}</p>
+
+        <button
+          onClick={onRetry}
+          className="inline-flex items-center gap-2 rounded-xl bg-[#0d1b2a] px-5 py-3 text-white hover:bg-[#1b3149] transition-all duration-200 hover:scale-[1.02]"
+          style={{ fontWeight: 600 }}
+        >
+          <RefreshCw className="w-4 h-4" />
+          Try Again
+        </button>
+
+        <p className="mt-4 text-xs text-[#7b8ca6]">
+          If the issue continues, please try again in a few moments.
+        </p>
       </div>
-      <p className="text-[#0d1b2a] text-sm mb-1" style={{ fontWeight: 600 }}>
-        Couldn't load this data
-      </p>
-      <p className="text-[#4a6080] text-xs mb-5 max-w-sm">{message}</p>
-      <button
-        onClick={onRetry}
-        className="flex items-center gap-2 bg-[#0d1b2a] text-white text-sm px-5 py-2.5 rounded-xl hover:bg-[#1a2f45] transition-colors"
-        style={{ fontWeight: 600 }}
-      >
-        <RefreshCw className="w-3.5 h-3.5" /> Try again
-      </button>
-    </div>
+    </motion.div>
   );
 }
 
@@ -370,7 +403,17 @@ function DashboardSkeleton() {
   );
 }
 
-function DashboardSection({ data }: { data: DashboardResponse }) {
+type DashboardSectionProps = {
+  data: DashboardResponse;
+  interviewHistory: any[];
+  latestInterview: any;
+};
+
+function DashboardSection({
+  data,
+  interviewHistory,
+  latestInterview,
+}: DashboardSectionProps) {
   const stats = data.stats ?? {
     questionsSolved: 0,
     practiceHours: 0,
@@ -378,32 +421,60 @@ function DashboardSection({ data }: { data: DashboardResponse }) {
     weeklyImprovement: 0,
   };
 
-  const progressHistory = data.progressHistory ?? [];
+  const readinessScore = latestInterview?.evaluation?.overallScore ?? 0;
+  const totalMocks = interviewHistory.length;
 
-  const mockSessions = data.mockSessions ?? [];
+  const averageScore =
+    interviewHistory.length > 0
+      ? Math.round(
+          interviewHistory.reduce((sum, item) => sum + item.score, 0) /
+            interviewHistory.length,
+        )
+      : 0;
 
-  const skillBreakdown = [
-    {
-      skill: "Confidence",
-      score: data.skillBreakdown?.confidence ?? 0,
-    },
-    {
-      skill: "Technical",
-      score: data.skillBreakdown?.technical ?? 0,
-    },
-    {
-      skill: "Readiness",
-      score: data.skillBreakdown?.readiness ?? 0,
-    },
-    {
-      skill: "Problem Solving",
-      score: data.skillBreakdown?.problemSolving ?? 0,
-    },
-    {
-      skill: "Communication",
-      score: data.skillBreakdown?.communication ?? 0,
-    },
-  ];
+  const progressHistory = interviewHistory
+    .slice()
+    .reverse()
+    .map((item, index) => ({
+      week: `Mock ${index + 1}`,
+      score: item.score,
+    }));
+
+  const mockSessions = interviewHistory.map((item) => ({
+    id: item.id,
+    title: item.role,
+    date: new Date(item.createdAt).toLocaleDateString(),
+    duration: item.difficulty,
+    score: item.score,
+    status: "COMPLETED",
+  }));
+
+  const evaluation = latestInterview?.evaluation;
+
+  const skillBreakdown = evaluation
+    ? [
+        {
+          skill: "Confidence",
+          score: evaluation.confidenceScore,
+        },
+        {
+          skill: "Technical",
+          score: evaluation.technicalScore,
+        },
+        {
+          skill: "Readiness",
+          score: evaluation.overallScore,
+        },
+        {
+          skill: "Problem Solving",
+          score: evaluation.problemSolvingScore,
+        },
+        {
+          skill: "Communication",
+          score: evaluation.communicationScore,
+        },
+      ]
+    : [];
 
   return (
     <div>
@@ -421,8 +492,8 @@ function DashboardSection({ data }: { data: DashboardResponse }) {
         <StatCard
           icon={<BarChart2 className="w-4.5 h-4.5" />}
           label="Readiness Score"
-          value={String(data?.user?.readinessScore)}
-          sub="↑ this month"
+          value={String(readinessScore)}
+          sub={`Avg ${averageScore}/100`}
           accent
         />
         <StatCard
@@ -434,8 +505,8 @@ function DashboardSection({ data }: { data: DashboardResponse }) {
         <StatCard
           icon={<Star className="w-4.5 h-4.5" />}
           label="Mock Sessions"
-          value={String(stats.mockSessions)}
-          sub="Last 30 days"
+          value={String(totalMocks)}
+          sub="Completed interviews"
         />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
@@ -444,7 +515,7 @@ function DashboardSection({ data }: { data: DashboardResponse }) {
             className="text-[#0d1b2a] text-sm mb-4"
             style={{ fontWeight: 600 }}
           >
-            Readiness Score — 8 Weeks
+            Readiness Score
           </p>
           {progressHistory.length === 0 ? (
             <EmptyState
@@ -535,7 +606,7 @@ function DashboardSection({ data }: { data: DashboardResponse }) {
       </div>
       <div className="mt-4 bg-white rounded-2xl border border-[#0d1b2a]/8 p-6">
         <p className="text-[#0d1b2a] text-sm mb-4" style={{ fontWeight: 600 }}>
-          Recent & Upcoming Mock Sessions
+          Recent Mock Sessions
         </p>
         {(mockSessions ?? []).length === 0 ? (
           <EmptyState
@@ -550,7 +621,7 @@ function DashboardSection({ data }: { data: DashboardResponse }) {
 
               return (
                 <div
-                  key={`${s.title}-${s.date}`}
+                  key={s.id}
                   className="flex items-center gap-4 p-3.5 rounded-xl bg-[#f0f4f8] hover:bg-[#e8f0f7] transition-colors"
                 >
                   <div
@@ -890,15 +961,21 @@ function MockSection({
                   </p>
                 </div>
                 <ul className="space-y-2">
-                  {result.strengths.map((item, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-2 text-xs text-emerald-700 leading-relaxed"
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 mt-1.5" />
-                      {item}
+                  {result.strengths && result.strengths.length > 0 ? (
+                    result.strengths.map((item, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-2 text-xs text-emerald-700 leading-relaxed"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 mt-1.5" />
+                        {item}
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-xs text-emerald-700">
+                      No strengths available
                     </li>
-                  ))}
+                  )}
                 </ul>
               </div>
 
@@ -916,15 +993,21 @@ function MockSection({
                   </p>
                 </div>
                 <ul className="space-y-2">
-                  {result.weaknesses.map((item, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-2 text-xs text-rose-700 leading-relaxed"
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shrink-0 mt-1.5" />
-                      {item}
+                  {result.weaknesses && result.weaknesses.length > 0 ? (
+                    result.weaknesses.map((item, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-2 text-xs text-rose-700 leading-relaxed"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shrink-0 mt-1.5" />
+                        {item}
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-xs text-rose-700">
+                      No improvement areas available
                     </li>
-                  ))}
+                  )}
                 </ul>
               </div>
             </div>
@@ -1665,6 +1748,10 @@ export default function CandidateDashboard() {
   const [dashboardData, setDashboardData] = useState<DashboardResponse | null>(
     null,
   );
+
+  const [interviewHistory, setInterviewHistory] = useState<any[]>([]);
+  const [latestInterview, setLatestInterview] = useState<any>(null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -1691,6 +1778,30 @@ export default function CandidateDashboard() {
     loadDashboard();
   }, [loadDashboard]);
 
+  useEffect(() => {
+    const loadInterviewHistory = async () => {
+      try {
+        const history = await getHistory();
+
+        setInterviewHistory(history);
+
+        if (history.length > 0) {
+          const latest = history[0];
+
+          const details = await getInterviewById(latest.id);
+
+          // console.log("Latest interview:", details);
+
+          setLatestInterview(details);
+        }
+      } catch (error) {
+        console.error("Failed to load interview history", error);
+      }
+    };
+
+    loadInterviewHistory();
+  }, []);
+
   function handleProfileSaved(
     user: UserProfile,
     skills: string[],
@@ -1708,6 +1819,30 @@ export default function CandidateDashboard() {
     .join("")
     .slice(0, 2)
     .toUpperCase();
+
+  const mockResult = latestInterview
+    ? {
+        overall: latestInterview.evaluation.overallScore,
+
+        technical: latestInterview.evaluation.technicalScore,
+
+        // If your backend doesn't provide readiness,
+        // decide whether to add it to the API or remove it from the UI.
+        readiness: latestInterview.evaluation.overallScore,
+
+        confidence: latestInterview.evaluation.confidenceScore,
+
+        communication: latestInterview.evaluation.communicationScore,
+
+        problemSolving: latestInterview.evaluation.problemSolvingScore,
+
+        strengths: latestInterview.evaluation.strengths,
+
+        weaknesses: latestInterview.evaluation.weaknesses,
+
+        session: new Date(latestInterview.createdAt).toLocaleDateString(),
+      }
+    : null;
 
   function renderBody() {
     if (loading) {
@@ -1728,14 +1863,29 @@ export default function CandidateDashboard() {
 
     switch (activeSection) {
       case "dashboard":
-        return <DashboardSection data={dashboardData} />;
+        return (
+          <DashboardSection
+            data={dashboardData}
+            interviewHistory={interviewHistory}
+            latestInterview={latestInterview}
+          />
+        );
       case "practice":
         return <PracticeSection questions={dashboardData.practiceQuestions} />;
       case "mock":
         return (
           <MockSection
-            result={dashboardData.lastMockResult ?? null}
-            sessions={dashboardData.mockSessions ?? []}
+            // result={dashboardData.lastMockResult ?? null}
+            // sessions={dashboardData.mockSessions ?? []}
+            result={mockResult}
+            sessions={interviewHistory.map((item) => ({
+              id: item.id,
+              type: item.role,
+              date: new Date(item.createdAt).toLocaleDateString(),
+              duration: item.difficulty,
+              score: item.score,
+              status: "completed",
+            }))}
           />
         );
       case "rooms":
