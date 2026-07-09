@@ -77,7 +77,7 @@ export default function Auth() {
         }
       }
 
-      console.log(response.data);
+      // console.log(response.data);
 
       // Save JWT
       localStorage.setItem("token", response.data.token);

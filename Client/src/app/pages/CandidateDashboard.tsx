@@ -57,6 +57,7 @@ import {
   deleteSkillApi,
   addTargetApi,
   deleteTargetApi,
+  getQuestionById,
 } from "../../services/candidateService";
 
 // User
@@ -168,18 +169,6 @@ export interface DashboardResponse {
   targets?: string[];
   experience?: Experience[];
 }
-
-// export interface SafeMockResult {
-//   session: string;
-//   overall: number;
-//   technical: number;
-//   readiness: number;
-//   confidence: number;
-//   communication: number;
-//   problemSolving: number;
-//   strengths: string[];
-//   weaknesses: string[];
-// }
 
 const navItems = [
   {
@@ -698,20 +687,25 @@ function PracticeSection({ questions }: { questions: PracticeQuestion[] }) {
               >
                 {q.difficulty.charAt(0) + q.difficulty.slice(1).toLowerCase()}
               </span>
-              {q.time ? (
-                <span className="text-[#4a6080] text-xs flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  {q.time}
-                </span>
-              ) : (
-                <button
-                  onClick={() => navigate("/CodeEditor")}
-                  className="text-[#00bfa6] text-xs flex items-center gap-1 hover:underline"
-                >
-                  <Play className="w-3 h-3" />
-                  Solve
-                </button>
-              )}
+              <button
+                // onClick={() => navigate(`/codeeditor/${q.id}`)}
+                onClick={async () => {
+                  // console.log("Question ID:", q.id);
+
+                  try {
+                    const data = await getQuestionById(q.id);
+                    // console.log("Returned Data:", data);
+                  } catch (err) {
+                    console.error(err);
+                  }
+
+                  navigate(`/codeeditor/${q.id}`);
+                }}
+                className="text-[#00bfa6] text-xs flex items-center gap-1 hover:underline"
+              >
+                <Play className="w-3 h-3" />
+                Solve
+              </button>
             </div>
           ))}
         </div>
