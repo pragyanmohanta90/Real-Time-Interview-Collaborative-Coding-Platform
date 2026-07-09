@@ -5,8 +5,7 @@ import com.interviewplatform.backend.candidate.dto.practice.PracticeQuestionResp
 import com.interviewplatform.backend.model.User;
 import com.interviewplatform.backend.service.UserService;
 import org.springframework.stereotype.Service;
-import com.interviewplatform.backend.candidate.dto.dashboard.AddTargetRequest;
-import com.interviewplatform.backend.candidate.dto.dashboard.TargetResponse;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +43,7 @@ public class CandidateDashboardService {
                 user.getLocation(),
                 user.getAvatar(),
                 user.getAbout(),
-                88
+                user.getReadinessScore()
         );
 
         response.setUser(dashboardUser);
@@ -65,7 +64,7 @@ public class CandidateDashboardService {
         // Progress History
         response.setProgressHistory(getReadinessChart());
 
-        // Practice Questions (MongoDB)
+        // Practice Questions
         List<PracticeQuestionResponse> questions =
                 practiceQuestionService.getPracticeQuestions(null);
 
@@ -81,17 +80,11 @@ public class CandidateDashboardService {
         response.setRooms(new ArrayList<>());
         response.setExperience(new ArrayList<>());
 
-        // Sample Skills
-        List<String> skills = new ArrayList<>();
-        skills.add("Java");
-        skills.add("Spring Boot");
-        response.setSkills(skills);
+        // Dynamic Skills
+        response.setSkills(user.getSkills());
 
-        // Sample Targets
-        List<String> targets = new ArrayList<>();
-        targets.add("Google");
-        targets.add("OpenAI");
-        response.setTargets(targets);
+        // Dynamic Targets
+        response.setTargets(user.getTargets());
 
         return response;
     }
@@ -157,65 +150,5 @@ public class CandidateDashboardService {
         ));
 
         return sessions;
-    }
-
-    // Add Target
-    public TargetResponse addTarget(AddTargetRequest request) {
-
-        User user = userService.getLoggedInUser();
-
-        String target = request.getTarget();
-
-        if (target == null || target.trim().isEmpty()) {
-            throw new RuntimeException("Target is required.");
-        }
-
-        target = target.trim();
-
-        if (user.getTargets().contains(target)) {
-            throw new RuntimeException(
-                    "Target \"" + target + "\" already exists."
-            );
-        }
-
-        user.getTargets().add(target);
-
-        userService.saveUser(user);
-
-        return new TargetResponse(
-                "target_" + user.getTargets().size(),
-                target,
-                false
-        );
-    }
-
-    // Delete Target
-    public TargetResponse deleteTarget(String id) {
-
-        User user = userService.getLoggedInUser();
-
-        int index;
-
-        try {
-            index = Integer.parseInt(
-                    id.replace("target_", "")
-            ) - 1;
-        } catch (Exception e) {
-            throw new RuntimeException("Invalid target id.");
-        }
-
-        if (index < 0 || index >= user.getTargets().size()) {
-            throw new RuntimeException("Target not found.");
-        }
-
-        String removedTarget = user.getTargets().remove(index);
-
-        userService.saveUser(user);
-
-        return new TargetResponse(
-                id,
-                removedTarget,
-                true
-        );
     }
 }
