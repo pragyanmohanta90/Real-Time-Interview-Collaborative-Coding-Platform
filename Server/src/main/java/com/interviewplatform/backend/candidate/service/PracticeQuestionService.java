@@ -102,7 +102,8 @@ public class PracticeQuestionService {
         PracticeQuestionDetailResponse response =
                 new PracticeQuestionDetailResponse();
 
-        response.setId(question.getId());
+        //change
+        response.setId(question.getExternalProblemId());
         response.setTitle(question.getTitle());
         response.setCategory(question.getCategory());
         response.setDifficulty(question.getDifficulty().name());
@@ -165,6 +166,7 @@ public class PracticeQuestionService {
                 break;
 
             case "python":
+            case "python3":
                 code = question.getStarterCode().getPython();
                 break;
 

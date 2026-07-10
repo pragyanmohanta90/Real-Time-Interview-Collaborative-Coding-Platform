@@ -8,19 +8,30 @@ import com.interviewplatform.backend.integration.onlinecompiler.OnlineCompilerRe
 import com.interviewplatform.backend.model.Question;
 import com.interviewplatform.backend.repository.QuestionRepository;
 import org.springframework.stereotype.Service;
+import com.interviewplatform.backend.candidate.codegen.JavaDriverGenerator;
+import com.interviewplatform.backend.candidate.codegen.PythonDriverGenerator;
+import com.interviewplatform.backend.model.TestCase;
+
+import java.util.List;
 
 @Service
 public class RunCodeService {
 
     private final OnlineCompilerClient onlineCompilerClient;
     private final QuestionRepository questionRepository;
+    private final JavaDriverGenerator javaDriverGenerator;
+    private final PythonDriverGenerator pythonDriverGenerator;
 
     public RunCodeService(
             OnlineCompilerClient onlineCompilerClient,
-            QuestionRepository questionRepository
+            QuestionRepository questionRepository,
+            JavaDriverGenerator javaDriverGenerator,
+            PythonDriverGenerator pythonDriverGenerator
     ) {
         this.onlineCompilerClient = onlineCompilerClient;
         this.questionRepository = questionRepository;
+        this.javaDriverGenerator = javaDriverGenerator;
+        this.pythonDriverGenerator = pythonDriverGenerator;
     }
 
     public RunCodeResponse executeCode(RunCodeRequest request) {
@@ -42,10 +53,45 @@ public class RunCodeService {
         Question question = questionRepository.findById(request.getQuestionId())
                 .orElseThrow(() -> new RuntimeException("Question not found."));
 
+        // Test Cases
+        List<TestCase> testCases = question.getTestCases();
+
         // Build Compiler Request
         OnlineCompilerRequest compilerRequest = new OnlineCompilerRequest();
         compilerRequest.setCompiler(getCompiler(request.getLanguage()));
-        compilerRequest.setCode(request.getCode());
+        String sourceCode;
+
+        switch (request.getLanguage().toLowerCase()) {
+
+            case "java":
+                sourceCode = javaDriverGenerator.generate(
+                        request.getCode(),
+                        question.getExecutionMetadata(),
+                        testCases
+                );
+                break;
+
+            case "python":
+            case "python3":
+                sourceCode = pythonDriverGenerator.generate(
+                        request.getCode(),
+                        question.getExecutionMetadata(),
+                        testCases
+                );
+                break;
+
+            case "cpp":
+            case "c++":
+                sourceCode = request.getCode(); // Temporary
+                break;
+
+            default:
+                throw new IllegalArgumentException(
+                        "Unsupported language: " + request.getLanguage()
+                );
+        }
+
+        compilerRequest.setCode(sourceCode);
         compilerRequest.setInput(
                 request.getInput() == null ? "" : request.getInput()
         );

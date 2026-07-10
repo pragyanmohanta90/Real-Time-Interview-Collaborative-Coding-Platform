@@ -23,6 +23,10 @@ public class JavaDriverGenerator {
 
         StringBuilder source = new StringBuilder();
 
+// Common Java imports
+        source.append("import java.util.*;\n");
+        source.append("import java.util.Arrays;\n\n");
+
         source.append(transformedCode);
         source.append("\n\n");
 

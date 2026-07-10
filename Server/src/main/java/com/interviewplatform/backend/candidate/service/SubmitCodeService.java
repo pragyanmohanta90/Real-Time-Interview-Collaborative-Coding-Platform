@@ -1,6 +1,7 @@
 package com.interviewplatform.backend.candidate.service;
 
 import com.interviewplatform.backend.candidate.codegen.JavaDriverGenerator;
+import com.interviewplatform.backend.candidate.codegen.PythonDriverGenerator;
 import com.interviewplatform.backend.candidate.dto.codeeditor.SubmitCodeResponse;
 import com.interviewplatform.backend.candidate.dto.practice.SubmitCodeRequest;
 import com.interviewplatform.backend.integration.onlinecompiler.OnlineCompilerClient;
@@ -26,6 +27,7 @@ public class SubmitCodeService {
     private final UserService userService;
     private final QuestionSubmissionService questionSubmissionService;
     private final JavaDriverGenerator javaDriverGenerator;
+    private final PythonDriverGenerator pythonDriverGenerator;
 
     // Compiler
     private final OnlineCompilerClient onlineCompilerClient;
@@ -36,12 +38,14 @@ public class SubmitCodeService {
             UserService userService,
             QuestionSubmissionService questionSubmissionService,
             JavaDriverGenerator javaDriverGenerator,
+            PythonDriverGenerator pythonDriverGenerator,
             OnlineCompilerClient onlineCompilerClient
     ) {
         this.questionRepository = questionRepository;
         this.userService = userService;
         this.questionSubmissionService = questionSubmissionService;
         this.javaDriverGenerator = javaDriverGenerator;
+        this.pythonDriverGenerator = pythonDriverGenerator;
         this.onlineCompilerClient = onlineCompilerClient;
     }
 
@@ -61,16 +65,43 @@ public class SubmitCodeService {
         List<TestCase> testCases = question.getTestCases();
 
         // Generate Driver
-        String sourceCode = javaDriverGenerator.generate(
-                request.getCode(),
-                question.getExecutionMetadata(),
-                testCases
-        );
+        String sourceCode;
+
+        switch (request.getLanguage().toLowerCase()) {
+
+            case "java":
+                sourceCode = javaDriverGenerator.generate(
+                        request.getCode(),
+                        question.getExecutionMetadata(),
+                        testCases
+                );
+                break;
+
+            case "python":
+            case "python3":
+                sourceCode = pythonDriverGenerator.generate(
+                        request.getCode(),
+                        question.getExecutionMetadata(),
+                        testCases
+                );
+                break;
+
+            case "cpp":
+            case "c++":
+                sourceCode = request.getCode(); // Temporary
+                break;
+
+            default:
+                throw new IllegalArgumentException(
+                        "Unsupported language: " + request.getLanguage()
+                );
+        }
 
         // Compiler Request
         OnlineCompilerRequest compilerRequest = new OnlineCompilerRequest();
 
         compilerRequest.setCompiler(getCompiler(request.getLanguage()));
+
         compilerRequest.setCode(sourceCode);
         compilerRequest.setInput("");
 
@@ -113,6 +144,9 @@ public class SubmitCodeService {
 
         String[] actualOutputs = output.split("\\R");
 
+        System.out.println("Test Cases      : " + testCases.size());
+        System.out.println("Actual Outputs  : " + actualOutputs.length);
+
         int passed = 0;
 
         for (int i = 0; i < testCases.size() && i < actualOutputs.length; i++) {
@@ -126,10 +160,25 @@ public class SubmitCodeService {
                     .replaceAll("\\s+", "")
                     .trim();
 
-            if (expected.equals(actual)) {
+            boolean matched = false;
+
+            try {
+                double expectedNumber = Double.parseDouble(expected);
+                double actualNumber = Double.parseDouble(actual);
+
+                matched = Math.abs(expectedNumber - actualNumber) < 1e-9;
+
+            } catch (NumberFormatException e) {
+
+                // Not a number (arrays, strings, booleans, etc.)
+                matched = expected.equals(actual);
+            }
+
+            if (matched) {
                 passed++;
             }
         }
+
 
 // Build Response
         response.setPassedTestCases(passed);
