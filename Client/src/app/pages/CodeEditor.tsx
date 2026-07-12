@@ -299,6 +299,8 @@ export default function CodeEditor() {
     const rightRef = useRef<HTMLDivElement>(null);
     const horizDragging = useRef(false);
     const vertDragging = useRef(false);
+    // Coding Timer
+    const sessionStart = useRef<number>(Date.now());
 
     const handleEditorMount = (_editor: any, monaco: any) => {
         monaco.editor.defineTheme(
@@ -346,6 +348,8 @@ export default function CodeEditor() {
                 });
 
                 setTestCases(cases);
+                // Start Coding Timer
+                sessionStart.current = Date.now();
             } catch (err) {
                 console.error(err);
             }
@@ -403,10 +407,18 @@ export default function CodeEditor() {
             setBottomTab("output");
             setResult(null);
 
+            const codingTimeSeconds = Math.floor(
+                (Date.now() - sessionStart.current) / 1000
+            );
+
             const response = await submitCode(questionId, {
                 language: lang,
                 code: codes[lang],
+                codingTimeSeconds,
             });
+
+// Reset timer after a successful submission
+            sessionStart.current = Date.now();
 
             setResultType("submit");
             setResult(response);

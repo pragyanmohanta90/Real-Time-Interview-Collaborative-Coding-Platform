@@ -25,7 +25,8 @@ public class QuestionSubmissionService {
             String language,
             String code,
             int passedTestCases,
-            int totalTestCases
+            int totalTestCases,
+            long codingTimeSeconds
     ) {
 
         Optional<QuestionSubmission> existing =
@@ -40,6 +41,9 @@ public class QuestionSubmissionService {
         submission.setQuestionId(questionId);
         submission.setLanguage(language);
         submission.setCode(code);
+        submission.setCodingTimeSeconds(
+                submission.getCodingTimeSeconds() + codingTimeSeconds
+        );
 
         submission.setPassedTestCases(passedTestCases);
         submission.setTotalTestCases(totalTestCases);
@@ -70,5 +74,14 @@ public class QuestionSubmissionService {
                 .stream()
                 .filter(s -> s.getStatus() == SubmissionStatus.SOLVED)
                 .count();
+    }
+
+    // Total Coding Time
+    public long getTotalCodingTimeSeconds(String userId) {
+
+        Long totalCodingTime =
+                questionSubmissionRepository.getTotalCodingTimeSeconds(userId);
+
+        return totalCodingTime == null ? 0L : totalCodingTime;
     }
 }

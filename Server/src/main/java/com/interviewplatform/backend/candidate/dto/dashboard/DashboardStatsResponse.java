@@ -4,7 +4,7 @@ public class DashboardStatsResponse {
 
     private int questionsSolved;
 
-    private int practiceHours;
+    private long codingTimeSeconds;
 
     private int mockSessions;
 
@@ -15,12 +15,12 @@ public class DashboardStatsResponse {
 
     public DashboardStatsResponse(
             int questionsSolved,
-            int practiceHours,
+            long codingTimeSeconds,
             int mockSessions,
             int weeklyImprovement
     ) {
         this.questionsSolved = questionsSolved;
-        this.practiceHours = practiceHours;
+        this.codingTimeSeconds = codingTimeSeconds;
         this.mockSessions = mockSessions;
         this.weeklyImprovement = weeklyImprovement;
     }
@@ -33,12 +33,12 @@ public class DashboardStatsResponse {
         this.questionsSolved = questionsSolved;
     }
 
-    public int getPracticeHours() {
-        return practiceHours;
+    public long getCodingTimeSeconds() {
+        return codingTimeSeconds;
     }
 
-    public void setPracticeHours(int practiceHours) {
-        this.practiceHours = practiceHours;
+    public void setCodingTimeSeconds(long codingTimeSeconds) {
+        this.codingTimeSeconds = codingTimeSeconds;
     }
 
     public int getMockSessions() {

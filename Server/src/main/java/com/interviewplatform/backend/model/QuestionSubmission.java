@@ -31,6 +31,9 @@ public class QuestionSubmission {
 
     private LocalDateTime submittedAt;
 
+    // Coding Time (Seconds)
+    private long codingTimeSeconds;
+
     public QuestionSubmission() {
     }
 
@@ -124,5 +127,15 @@ public class QuestionSubmission {
     // Setter
     public void setMemory(String memory) {
         this.memory = memory;
+    }
+
+    // Get Coding Time
+    public long getCodingTimeSeconds() {
+        return codingTimeSeconds;
+    }
+
+    // Set Coding Time
+    public void setCodingTimeSeconds(long codingTimeSeconds) {
+        this.codingTimeSeconds = codingTimeSeconds;
     }
 }

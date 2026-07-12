@@ -24,7 +24,7 @@ export const fetchDashboard = async (): Promise<DashboardResponse> => {
 
     stats: {
       questionsSolved: data.stats?.questionsSolved ?? 0,
-      practiceHours: data.stats?.practiceHours ?? 0,
+      codingTimeSeconds: data.stats?.codingTimeSeconds ?? 0,
       mockSessions: data.stats?.mockSessions ?? 0,
       weeklyImprovement: data.stats?.weeklyImprovement ?? 0,
     },

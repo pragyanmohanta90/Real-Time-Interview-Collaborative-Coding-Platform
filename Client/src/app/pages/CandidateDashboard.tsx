@@ -76,7 +76,7 @@ export interface UserProfile {
 
 export interface DashboardStats {
   questionsSolved: number;
-  practiceHours: number;
+  codingTimeSeconds: number;
   mockSessions: number;
   weeklyImprovement: number;
 }
@@ -105,6 +105,26 @@ export interface PracticeQuestion {
   difficulty: "EASY" | "MEDIUM" | "HARD";
   done: boolean;
   time: string;
+}
+
+// Time Formatter
+function formatCodingTime(seconds: number) {
+  if (seconds < 60) {
+    return `${seconds}s`;
+  }
+
+  if (seconds < 3600) {
+    return `${Math.floor(seconds / 60)}m`;
+  }
+
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+
+  if (minutes === 0) {
+    return `${hours}h`;
+  }
+
+  return `${hours}h ${minutes}m`;
 }
 
 // Mock Sessions
@@ -413,7 +433,7 @@ function DashboardSection({
 }: DashboardSectionProps) {
   const stats = data.stats ?? {
     questionsSolved: 0,
-    practiceHours: 0,
+    codingTimeSeconds: 0,
     mockSessions: 0,
     weeklyImprovement: 0,
   };
@@ -472,7 +492,10 @@ function DashboardSection({
       },
     ]
     : [];
-
+  //temp
+  console.log("Dashboard Stats:", stats);
+  console.log("Coding Time:", stats.codingTimeSeconds);
+  console.log("Type:", typeof stats.codingTimeSeconds);
   return (
     <div>
       <SectionHeader
@@ -496,7 +519,7 @@ function DashboardSection({
         <StatCard
           icon={<Clock className="w-4.5 h-4.5" />}
           label="Practice Hours"
-          value={`${stats.practiceHours}h`}
+          value={formatCodingTime(stats.codingTimeSeconds)}
           sub="Last 30 days"
         />
         <StatCard

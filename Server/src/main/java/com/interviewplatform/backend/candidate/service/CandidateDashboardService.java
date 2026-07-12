@@ -18,19 +18,34 @@ public class CandidateDashboardService {
     // Practice Question Service
     private final PracticeQuestionService practiceQuestionService;
 
+    // Question Submission Service
+    private final QuestionSubmissionService questionSubmissionService;
+
     // Constructor
     public CandidateDashboardService(
             UserService userService,
-            PracticeQuestionService practiceQuestionService
+            PracticeQuestionService practiceQuestionService,
+            QuestionSubmissionService questionSubmissionService
     ) {
         this.userService = userService;
         this.practiceQuestionService = practiceQuestionService;
+        this.questionSubmissionService = questionSubmissionService;
     }
 
     // Dashboard
     public DashboardResponse getDashboard() {
 
         User user = userService.getLoggedInUser();
+
+        // Solved Questions
+        long solvedQuestions =
+                questionSubmissionService.getSolvedCount(user.getId());
+
+        // Coding Time
+        long codingTimeSeconds =
+                questionSubmissionService.getTotalCodingTimeSeconds(user.getId());
+
+
 
         DashboardResponse response = new DashboardResponse();
 
@@ -50,8 +65,8 @@ public class CandidateDashboardService {
 
         // Stats
         DashboardStatsResponse stats = new DashboardStatsResponse(
-                124,
-                34,
+                (int) solvedQuestions,
+                codingTimeSeconds,
                 9,
                 12
         );

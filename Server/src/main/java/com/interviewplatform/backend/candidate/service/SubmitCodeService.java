@@ -131,7 +131,8 @@ public class SubmitCodeService {
                     request.getLanguage(),
                     request.getCode(),
                     0,
-                    testCases.size()
+                    testCases.size(),
+                    request.getCodingTimeSeconds()
             );
 
             return response;
@@ -197,8 +198,9 @@ public class SubmitCodeService {
                 request.getLanguage(),
                 request.getCode(),
                 passed,
-                testCases.size()
-        );
+                testCases.size(),
+                request.getCodingTimeSeconds()
+        );;
 
         return response;
     }

@@ -62,15 +62,16 @@ export const runCode = async (request: {
 // Submit Code
 // ----------------------
 export const submitCode = async (
-  questionId: string,
-  request: {
-    language: string;
-    code: string;
-  }
+    questionId: string,
+    request: {
+      language: string;
+      code: string;
+      codingTimeSeconds: number;
+    }
 ) => {
   const response = await API.post(
-    `/code-editor/questions/${questionId}/submit`,
-    request
+      `/code-editor/questions/${questionId}/submit`,
+      request
   );
 
   return response.data;

@@ -8,6 +8,9 @@ public class SubmitCodeRequest {
     // User Source Code
     private String code;
 
+    // Coding Time (Seconds)
+    private long codingTimeSeconds;
+
     // Default Constructor
     public SubmitCodeRequest() {
     }
@@ -30,5 +33,15 @@ public class SubmitCodeRequest {
     // Setter
     public void setCode(String code) {
         this.code = code;
+    }
+
+    // Getter
+    public long getCodingTimeSeconds() {
+        return codingTimeSeconds;
+    }
+
+    // Setter
+    public void setCodingTimeSeconds(long codingTimeSeconds) {
+        this.codingTimeSeconds = codingTimeSeconds;
     }
 }
