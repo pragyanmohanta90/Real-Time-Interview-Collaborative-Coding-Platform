@@ -448,7 +448,7 @@ export default function CodeEditor() {
                         <span className="font-semibold text-sm tracking-tight">CodeGear</span>
                     </div>
                     <div className="w-px h-4 bg-border" />
-                    <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-1.5 py-1 rounded hover:bg-secondary">
+                    {/* <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-1.5 py-1 rounded hover:bg-secondary">
                         <ChevronLeft size={13} />
                         Prev
                     </button>
@@ -459,14 +459,14 @@ export default function CodeEditor() {
                     <button className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-1.5 py-1 rounded hover:bg-secondary">
                         <FileText size={13} />
                         Problem List
-                    </button>
+                    </button> */}
                 </div>
 
                 {/* Right: actions */}
                 <div className="flex items-center gap-2">
-                    <div className="text-xs text-muted-foreground hidden md:block">
+                    {/* <div className="text-xs text-muted-foreground hidden md:block">
                         <span className="text-foreground font-medium">1</span> / 3506
-                    </div>
+                    </div> */}
                     <div className="w-px h-4 bg-border hidden md:block" />
                     <button
                         onClick={handleRun}
@@ -815,7 +815,7 @@ export default function CodeEditor() {
 
                                                     <p
                                                         className={`font-medium ${
-                                                            result.status === "success"
+                                                            result.status === "Accepted" || result.status === "success"
                                                                 ? "text-green-500"
                                                                 : "text-red-500"
                                                         }`}

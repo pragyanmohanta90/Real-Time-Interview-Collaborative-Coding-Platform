@@ -507,7 +507,7 @@ function DashboardSection({
           icon={<CheckCircle className="w-4.5 h-4.5" />}
           label="Questions Solved"
           value={String(stats.questionsSolved)}
-          sub={`+${stats.weeklyImprovement} this week`}
+          // sub={`+${stats.weeklyImprovement} this week`}
         />
         <StatCard
           icon={<BarChart2 className="w-4.5 h-4.5" />}
