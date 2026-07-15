@@ -6,6 +6,7 @@ import InterviewerDashboard from "./pages/InterviewerDashboard";
 import CodeEditor from "./pages/CodeEditor";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import InterviewRoom from "./pages/InterviewRoom";
 
 import BotHome from "./bot/pages/BotHome";
 import Interview from "./bot/pages/Interview";
@@ -83,4 +84,8 @@ export const router = createBrowserRouter([
     path: "*",
     Component: RouteError,
   },
+  { path: "/interview-room",
+    Component: InterviewRoom,
+    ErrorBoundary: RouteError,
+  }
 ]);
