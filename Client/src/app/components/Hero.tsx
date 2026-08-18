@@ -1,17 +1,71 @@
 import { ArrowRight, Play, Star } from "lucide-react";
-import Typed from 'typed.js';
-import { useEffect } from 'react';
-
-
+import Typed from "typed.js";
+import { useEffect } from "react";
+import { useNavigate } from "react-router";
 
 export function Hero() {
+  const navigate = useNavigate();
+  const handleGetStarted = () => {
+    const token = localStorage.getItem("token");
+    const userString = localStorage.getItem("user");
+
+    // No authentication → smooth scroll to Get Started
+    if (!token || !userString) {
+      const element = document.getElementById("get-started");
+
+      if (element) {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+
+      return;
+    }
+
+    try {
+      const user = JSON.parse(userString);
+
+      if (user.role === "CANDIDATE") {
+        navigate("/candidate");
+        return;
+      }
+
+      if (user.role === "INTERVIEWER") {
+        navigate("/interviewer");
+        return;
+      }
+
+      // Invalid role
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      const element = document.getElementById("get-started");
+
+      element?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    } catch (error) {
+      console.error("Invalid user:", error);
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      document.getElementById("get-started")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  };
+
   useEffect(() => {
-    const typed = new Typed('#element', {
+    const typed = new Typed("#element", {
       strings: [
-        'Hire Smarter.',
-        '<span style="color:#00bfa6">Perform Better.</span>'
+        "Hire Smarter.",
+        '<span style="color:#00bfa6">Perform Better.</span>',
       ],
-      contentType: 'html',
+      contentType: "html",
       typeSpeed: 50,
       backSpeed: 70,
       loop: true,
@@ -28,9 +82,17 @@ export function Hero() {
         <div className="absolute top-20 left-10 w-px h-32 bg-gradient-to-b from-transparent via-[#00bfa6]/40 to-transparent" />
         <div className="absolute top-40 right-20 w-px h-48 bg-gradient-to-b from-transparent via-[#00bfa6]/20 to-transparent" />
         {/* Grid dots */}
-        <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
+        <svg
+          className="absolute inset-0 w-full h-full opacity-[0.04]"
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <defs>
-            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <pattern
+              id="grid"
+              width="40"
+              height="40"
+              patternUnits="userSpaceOnUse"
+            >
               <circle cx="1" cy="1" r="1" fill="white" />
             </pattern>
           </defs>
@@ -51,27 +113,39 @@ export function Hero() {
 
           <h1
             className="text-white mb-6 leading-tight whitespace-nowrap "
-            style={{ fontFamily: "'Roboto Slab', serif", fontWeight: 600, fontSize: "clamp(2.25rem, 5vw, 3.75rem)", lineHeight: 1.15 }}
-          ><span id="element" >
-            </span>
+            style={{
+              fontFamily: "'Roboto Slab', serif",
+              fontWeight: 600,
+              fontSize: "clamp(2.25rem, 5vw, 3.75rem)",
+              lineHeight: 1.15,
+            }}
+          >
+            <span id="element"></span>
           </h1>
 
           <p
             className="text-white/60 text-lg mb-10 max-w-xl leading-relaxed"
             style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 400 }}
           >
-            CodeGear brings candidates and interviewers together in a structured, AI-powered virtual environment. Run technical interviews, assess soft skills, and land the right role — all in one platform.
+            CodeGear brings candidates and interviewers together in a
+            structured, AI-powered virtual environment. Run technical
+            interviews, assess soft skills, and land the right role — all in one
+            platform.
           </p>
 
           <div className="flex flex-wrap gap-4 mb-12">
-            <a
-              href="#get-started"
+            <button
+              onClick={handleGetStarted}
               className="inline-flex items-center gap-2 bg-[#00bfa6] text-[#0d1b2a] px-7 py-3.5 rounded-lg hover:bg-[#00d4b8] transition-all hover:shadow-lg hover:shadow-[#00bfa6]/25 active:scale-[0.98]"
-              style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}
+              style={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontWeight: 600,
+              }}
             >
               Get Started Free
               <ArrowRight className="w-4 h-4" />
-            </a>
+            </button>
+
             <a
               href="#how-it-works"
               className="inline-flex items-center gap-2 text-white/70 border border-white/20 px-7 py-3.5 rounded-lg hover:border-white/40 hover:text-white transition-all"
@@ -85,8 +159,16 @@ export function Hero() {
           {/* Social proof */}
           <div className="flex items-center gap-6 border-t border-white/10 pt-8">
             <div className="flex -space-x-2">
-              {["bg-blue-400", "bg-emerald-400", "bg-violet-400", "bg-orange-400"].map((color, i) => (
-                <div key={i} className={`w-8 h-8 rounded-full ${color} border-2 border-[#0d1b2a] flex items-center justify-center text-[10px] text-white font-semibold`}>
+              {[
+                "bg-blue-400",
+                "bg-emerald-400",
+                "bg-violet-400",
+                "bg-orange-400",
+              ].map((color, i) => (
+                <div
+                  key={i}
+                  className={`w-8 h-8 rounded-full ${color} border-2 border-[#0d1b2a] flex items-center justify-center text-[10px] text-white font-semibold`}
+                >
                   {["AK", "MR", "SL", "+"][i]}
                 </div>
               ))}
@@ -94,10 +176,18 @@ export function Hero() {
             <div>
               <div className="flex gap-0.5 mb-0.5">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="w-3 h-3 fill-[#00bfa6] text-[#00bfa6]" />
+                  <Star
+                    key={i}
+                    className="w-3 h-3 fill-[#00bfa6] text-[#00bfa6]"
+                  />
                 ))}
               </div>
-              <p className="text-white/50 text-xs" style={{ fontFamily: "'DM Sans', sans-serif" }}>4.9/5 from 3,200+ reviews</p>
+              <p
+                className="text-white/50 text-xs"
+                style={{ fontFamily: "'DM Sans', sans-serif" }}
+              >
+                4.9/5 from 3,200+ reviews
+              </p>
             </div>
           </div>
         </div>
@@ -112,24 +202,48 @@ export function Hero() {
             />
             {/* Overlay UI elements */}
             <div className="absolute inset-0 bg-gradient-to-t from-[#0d1b2a]/80 via-transparent to-transparent" />
-            <div className="absolute top-4 left-4 bg-[#0d1b2a]/70 backdrop-blur-sm text-[#00bfa6] text-xs px-3 py-1 rounded-full border border-[#00bfa6]/30" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            <div
+              className="absolute top-4 left-4 bg-[#0d1b2a]/70 backdrop-blur-sm text-[#00bfa6] text-xs px-3 py-1 rounded-full border border-[#00bfa6]/30"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+            >
               ● LIVE
             </div>
-            <div className="absolute top-4 right-4 bg-[#0d1b2a]/70 backdrop-blur-sm text-white/70 text-xs px-3 py-1 rounded-full border border-white/10" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            <div
+              className="absolute top-4 right-4 bg-[#0d1b2a]/70 backdrop-blur-sm text-white/70 text-xs px-3 py-1 rounded-full border border-white/10"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+            >
               42:17
             </div>
             <div className="absolute bottom-0 left-0 right-0 p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-white text-sm" style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}>Senior Frontend Engineer</p>
-                  <p className="text-white/50 text-xs" style={{ fontFamily: "'DM Sans', sans-serif" }}>Technical Round · Round 2 of 3</p>
+                  <p
+                    className="text-white text-sm"
+                    style={{
+                      fontFamily: "'DM Sans', sans-serif",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Senior Frontend Engineer
+                  </p>
+                  <p
+                    className="text-white/50 text-xs"
+                    style={{ fontFamily: "'DM Sans', sans-serif" }}
+                  >
+                    Technical Round · Round 2 of 3
+                  </p>
                 </div>
                 <div className="flex gap-2">
-                  {["bg-red-500", "bg-yellow-500", "bg-[#00bfa6]"].map((c, i) => (
-                    <div key={i} className={`w-8 h-8 rounded-lg ${c}/20 border border-white/10 flex items-center justify-center`}>
-                      <div className={`w-2 h-2 rounded-full ${c}`} />
-                    </div>
-                  ))}
+                  {["bg-red-500", "bg-yellow-500", "bg-[#00bfa6]"].map(
+                    (c, i) => (
+                      <div
+                        key={i}
+                        className={`w-8 h-8 rounded-lg ${c}/20 border border-white/10 flex items-center justify-center`}
+                      >
+                        <div className={`w-2 h-2 rounded-full ${c}`} />
+                      </div>
+                    ),
+                  )}
                 </div>
               </div>
             </div>
@@ -137,7 +251,12 @@ export function Hero() {
 
           {/* Floating score card */}
           <div className="absolute -bottom-6 -left-6 bg-white rounded-xl p-4 shadow-xl shadow-black/20 border border-[#0d1b2a]/5">
-            <p className="text-[#4a6080] text-xs mb-2" style={{ fontFamily: "'DM Sans', sans-serif" }}>AI Score Summary</p>
+            <p
+              className="text-[#4a6080] text-xs mb-2"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+            >
+              AI Score Summary
+            </p>
             <div className="flex gap-3">
               {[
                 { label: "Clarity", score: 88 },
@@ -145,15 +264,31 @@ export function Hero() {
                 { label: "Speed", score: 76 },
               ].map(({ label, score }) => (
                 <div key={label} className="text-center">
-                  <div className="text-[#0d1b2a] text-sm mb-0.5" style={{ fontFamily: "'Roboto Slab', serif", fontWeight: 700 }}>{score}</div>
-                  <div className="text-[#4a6080] text-xs" style={{ fontFamily: "'DM Sans', sans-serif" }}>{label}</div>
+                  <div
+                    className="text-[#0d1b2a] text-sm mb-0.5"
+                    style={{
+                      fontFamily: "'Roboto Slab', serif",
+                      fontWeight: 700,
+                    }}
+                  >
+                    {score}
+                  </div>
+                  <div
+                    className="text-[#4a6080] text-xs"
+                    style={{ fontFamily: "'DM Sans', sans-serif" }}
+                  >
+                    {label}
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Floating status pill */}
-          <div className="absolute -top-4 -right-4 bg-[#00bfa6] text-[#0d1b2a] text-xs px-3 py-2 rounded-xl shadow-lg" style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}>
+          <div
+            className="absolute -top-4 -right-4 bg-[#00bfa6] text-[#0d1b2a] text-xs px-3 py-2 rounded-xl shadow-lg"
+            style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}
+          >
             AI Feedback Ready ✓
           </div>
         </div>
