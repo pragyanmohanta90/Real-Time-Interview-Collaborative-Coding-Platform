@@ -152,9 +152,8 @@ export function DashboardLayout({
     >
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-60 bg-[#0d1b2a] flex flex-col transition-transform duration-200 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:translate-x-0`}
+        className={`fixed inset-y-0 left-0 z-40 w-60 bg-[#0d1b2a] flex flex-col transition-transform duration-200 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } lg:translate-x-0`}
       >
         <div className="flex items-center justify-between px-5 h-16 border-b border-white/8 shrink-0">
           <Link to="/" className="flex items-center gap-2">
@@ -165,7 +164,7 @@ export function DashboardLayout({
               className="text-white text-base"
               style={{ fontFamily: "'Roboto Slab', serif", fontWeight: 600 }}
             >
-              InterviewAI
+              CodeGear
             </span>
           </Link>
           <button
@@ -202,13 +201,12 @@ export function DashboardLayout({
                   onSectionChange(id);
                   setSidebarOpen(false);
                 }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 text-sm transition-all ${
-                  active
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 text-sm transition-all ${active
                     ? role === "candidate"
                       ? "bg-[#00bfa6]/15 text-[#00bfa6]"
                       : "bg-[#4d9de0]/15 text-[#4d9de0]"
                     : "text-white/50 hover:text-white hover:bg-white/5"
-                }`}
+                  }`}
                 style={{ fontWeight: active ? 600 : 400 }}
               >
                 <span className={active ? accentFg : ""}>{icon}</span>
