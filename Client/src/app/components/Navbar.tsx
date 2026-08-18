@@ -1,18 +1,70 @@
 import { useState } from "react";
 import { Menu, X, Video } from "lucide-react";
-import { Link } from "react-router";
+import { useNavigate } from "react-router";
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleAuthRedirect = () => {
+    const token = localStorage.getItem("token");
+    const userString = localStorage.getItem("user");
+
+    if (!token || !userString) {
+      // Go to home and scroll to Get Started
+      if (window.location.pathname !== "/") {
+        window.location.href = "/#get-started";
+        return;
+      }
+
+      document.getElementById("get-started")?.scrollIntoView({
+        behavior: "smooth",
+      });
+
+      return;
+    }
+
+    try {
+      const user = JSON.parse(userString);
+
+      if (user.role === "CANDIDATE") {
+        navigate("/candidate");
+        return;
+      }
+
+      if (user.role === "INTERVIEWER") {
+        navigate("/interviewer");
+        return;
+      }
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      window.location.href = "/#get-started";
+    } catch (error) {
+      console.error("Invalid user:", error);
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      window.location.href = "/#get-started";
+    }
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0d1b2a]/95 backdrop-blur-sm border-b border-white/10">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+        <div
+          className="flex items-center gap-2 cursor-pointer"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        >
           <div className="w-8 h-8 rounded-lg bg-[#00bfa6] flex items-center justify-center">
             <Video className="w-4 h-4 text-[#0d1b2a]" />
           </div>
-          <span style={{ fontFamily: "'Roboto Slab', serif", fontWeight: 600 }} className="text-white text-lg">
+          <span
+            style={{ fontFamily: "'Roboto Slab', serif", fontWeight: 600 }}
+            className="text-white text-lg"
+          >
             CodeGear
           </span>
         </div>
@@ -46,24 +98,33 @@ export function Navbar() {
           >
             About
           </a>
-
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          <a
-            href="#get-started"
+          <button
+            onClick={handleAuthRedirect}
             className="text-white/80 hover:text-white text-sm px-4 py-2 transition-colors"
             style={{ fontFamily: "'DM Sans', sans-serif" }}
           >
             Sign In
-          </a>
-          <a
+          </button>
+          {/* <a
             href="#get-started"
             className="bg-[#00bfa6] text-[#0d1b2a] text-sm px-5 py-2 rounded-lg hover:bg-[#00d4b8] transition-colors"
             style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}
           >
             Get Started
-          </a>
+          </a> */}
+          <button
+            onClick={handleAuthRedirect}
+            className="bg-[#00bfa6] text-[#0d1b2a] text-sm px-5 py-2 rounded-lg hover:bg-[#00d4b8] transition-colors"
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontWeight: 600,
+            }}
+          >
+            Get Started
+          </button>
         </div>
 
         <button
@@ -105,7 +166,13 @@ export function Navbar() {
             About
           </a>
           <div className="flex gap-3 pt-2 border-t border-white/10">
-            <a href="#get-started" className="bg-[#00bfa6] text-[#0d1b2a] text-sm px-4 py-1.5 rounded-lg" style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}>Get Started</a>
+            <a
+              href="#get-started"
+              className="bg-[#00bfa6] text-[#0d1b2a] text-sm px-4 py-1.5 rounded-lg"
+              style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}
+            >
+              Get Started
+            </a>
           </div>
         </div>
       )}
